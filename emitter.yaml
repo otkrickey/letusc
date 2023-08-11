@@ -1,0 +1,51 @@
+LetusSession:
+  login:
+    __login_letus:
+      Start: 202
+      Success: 200
+      Retry: 503
+      Timeout: 504
+      PasswordError: 401
+    __login_microsoft:
+      Start: 202
+      Success: 200
+      PasswordError: 401
+      PasswordValid: 202
+      MFA:
+        Waiting: 202
+        WaitingNoRemember: 202
+        Success: 202
+Service:
+  RegisterAccount:
+    Start: 202
+    Success: 200
+    CheckAccountValidity:
+      Start: 202
+      Success: 200
+      Timeout: 504
+      PasswordError: 401
+      Error: 500
+    Register:
+      Start: 202
+      Success: 200
+      Error: 500
+ServiceManager:
+  Start: 202
+  ServiceNotFound: 404
+  IndexError: 400
+  registerAccount:
+    IndexError: 400
+AccountManager:
+  fetch_account:
+    Start: 202
+    NotFound: 404
+  register_account:
+    Start: 202
+    Creating: 202
+    Success: 200
+    WriteError: 409
+  update_account:
+    Start: 202
+    Updating: 202
+    Success: 200
+    WriteError: 409
