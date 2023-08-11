@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# backup dns settings
+bash ~/dev/letus-scraper/operation/backup_dns_setting.sh
+
 # reinstall vpn
 bash ~/dev/letus-scraper/operation/reinstall_vpn.sh
 
