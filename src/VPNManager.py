@@ -257,7 +257,7 @@ class VPNController:
     def _status_worker(self):
         __logger = Log("VPNController.status_worker")
         __logger.info("Starting VPN status worker")
-        interval = 10 * 60
+        interval = int(env("VPN_STATUS_INTERVAL")) * 60  # minutes to seconds
         # first check
         self.status()
         while True:
@@ -292,7 +292,6 @@ class VPNController:
             if not VPNController._Manager._is_connected:
                 VPNController._Manager.connect()
             VPNController.cv.notify()
-            
 
 
 # TODO: VPNManager
