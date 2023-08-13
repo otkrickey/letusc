@@ -73,8 +73,9 @@ class Logger:
 
 
 class Log:
-    def __init__(self, obj: str):
+    def __init__(self, obj: str, enabled: bool = True):
         self.obj = obj
+        self.enabled = enabled
 
     def __obj(self):
         text = []
@@ -94,16 +95,20 @@ class Log:
 
     def info(self, message):
         prefix = f"[{self.__s(44)}{self.__obj()}]"
-        print(f"[ \033[34minfo\033[0m] {prefix} {message}")
+        if self.enabled:
+            print(f"[ \033[34minfo\033[0m] {prefix} {message}")
 
     def debug(self, message):
         prefix = f"[{self.__s(44)}{self.__obj()}]"
-        print(f"[\033[33mdebug\033[0m] {prefix} {message}")
+        if self.enabled:
+            print(f"[\033[33mdebug\033[0m] {prefix} {message}")
 
     def error(self, message):
         prefix = f"[{self.__s(44)}{self.__obj()}]"
-        print(f"[\033[31merror\033[0m] {prefix} {message}")
+        if self.enabled:
+            print(f"[\033[31merror\033[0m] {prefix} {message}")
 
     def warn(self, message):
         prefix = f"[{self.__s(44)}{self.__obj()}]"
-        print(f"[ \033[35mwarn\033[0m] {prefix} {message}")
+        if self.enabled:
+            print(f"[ \033[35mwarn\033[0m] {prefix} {message}")

@@ -37,11 +37,17 @@ def get_auth_url(year=get_year(), omit_year=True):
     return f"{get_origin_url(year, omit_year)}/auth/shibboleth/index.php"
 
 
-def mongo_url():
+def env(key: str) -> str:
     load_dotenv(verbose=True)
     dotenv_path = path.abspath(path.join(path.dirname(__file__), "../../.env"))
     load_dotenv(dotenv_path)
-    user = os.environ.get("MONGO_USER")
-    password = os.environ.get("MONGO_PASSWORD")
-    host = os.environ.get("MONGO_HOST")
-    return f"mongodb+srv://{user}:{password}@{host}/?retryWrites=true&w=majority"
+    val = os.environ.get(key)
+    if not isinstance(val, str):
+        raise ValueError(f"env {key} is not set")
+    return val
+
+def mongo_url():
+    user = env("MONGO_USER")
+    passwd = env("MONGO_PASS")
+    host = env("MONGO_HOST")
+    return f"mongodb+srv://{user}:{passwd}@{host}/?retryWrites=true&w=majority"

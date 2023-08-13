@@ -1,5 +1,6 @@
 import queue
 import sys
+from src.VPNManager import VPNController, VPNManager
 from src.Letus.LetusAccount import LetusAccount
 from src.Letus.LetusContent import LetusContentV2
 from src.Letus.LetusPage import LetusPageV2
@@ -41,10 +42,13 @@ def test():
 
 
 def main(TM: TaskManager):
+    VC = VPNController()
+
     AccountTaskQueue = queue.Queue()
     ContentTaskQueue = queue.Queue()
+    NetworkTaskQueue = queue.Queue()
     watcher_config = [
-        # {i: watcher id, q: task queue}
+        # {i: watcher id, q: task queue, w: worker function(optional)}
         {"i": "account", "q": AccountTaskQueue},
         {"i": "content", "q": ContentTaskQueue},
     ]
@@ -53,7 +57,9 @@ def main(TM: TaskManager):
         {"w": AccountWorker, "q": AccountTaskQueue},
         {"w": ContentWorker, "q": ContentTaskQueue},
     ]
-    TM.configure(watcher_config, worker_config)
+    # task class
+    normal_task = []
+    TM.configure(watcher_config, worker_config, normal_task)
     TM.start()
 
 

@@ -10,7 +10,7 @@ bash ~/dev/letus-scraper/operation/reinstall_vpn.sh
 source ~/dev/letus-scraper/.env
 
 # connect vpn
-/opt/cisco/anyconnect/bin/vpn -s connect $TUS_DOMAIN <<EOF
-$TUS_USER
-$TUS_PASSWORD
+/opt/cisco/anyconnect/bin/vpn -s connect $VPN_HOST <<EOF
+$VPN_USER
+$VPN_PASS
 EOF

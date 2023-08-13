@@ -11,7 +11,7 @@ class TaskManager:
         self.db = self.client["task"]
         self.stop_flag = False
 
-    def configure(self, watcher_config, worker_config) -> None:
+    def configure(self, watcher_config, worker_config, normal_task) -> None:
         self.watchers = []
         self.workers = []
         self.watcher_config = watcher_config
@@ -20,7 +20,12 @@ class TaskManager:
         print("configuring watchers and workers")
         for watcher in watcher_config:
             __thread = Thread(
-                target=self.watcher, args=(watcher["i"], watcher["q"],), daemon=True
+                target=self.watcher,
+                args=(
+                    watcher["i"],
+                    watcher["q"],
+                ),
+                daemon=True,
             )
             self.watchers.append(__thread)
         for worker in worker_config:
