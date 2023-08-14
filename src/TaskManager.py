@@ -11,7 +11,7 @@ class TaskManager:
         self.db = self.client["task"]
         self.stop_flag = False
 
-    def configure(self, watcher_config, worker_config, normal_task) -> None:
+    def configure(self, watcher_config, worker_config) -> None:
         self.watchers = []
         self.workers = []
         self.watcher_config = watcher_config

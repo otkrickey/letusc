@@ -61,7 +61,7 @@ class VPNManager:
         dst = "/etc/resolv.conf"
         # check if src file exists
         if path.exists(src):
-            shutil.copyfile(src, dst)
+            shutil.copy(src, dst)
             __logger.info("DNS settings fixed")
         else:
             __logger.warn("DNS backup file does not exist")

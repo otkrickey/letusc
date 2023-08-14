@@ -47,9 +47,8 @@ def main(TM: TaskManager):
 
     AccountTaskQueue = queue.Queue()
     ContentTaskQueue = queue.Queue()
-    NetworkTaskQueue = queue.Queue()
     watcher_config = [
-        # {i: watcher id, q: task queue, w: worker function(optional)}
+        # {i: watcher id, q: task queue}
         {"i": "account", "q": AccountTaskQueue},
         {"i": "content", "q": ContentTaskQueue},
     ]
@@ -58,9 +57,7 @@ def main(TM: TaskManager):
         {"w": AccountWorker, "q": AccountTaskQueue},
         {"w": ContentWorker, "q": ContentTaskQueue},
     ]
-    # task class
-    normal_task = []
-    TM.configure(watcher_config, worker_config, normal_task)
+    TM.configure(watcher_config, worker_config)
     TM.start()
 
 
