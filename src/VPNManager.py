@@ -9,6 +9,7 @@ from src.util.static import env
 
 
 class VPNManager:
+    _is_backed_up = False
     _is_installed = False
     _is_connected = False
     _is_alive = False
@@ -33,22 +34,27 @@ class VPNManager:
         # set config
         self.show_cli_log = show_cli_log
 
-        # initialize status
-        # self.status()
-
-        # self.backup_dns()
-        # self.install()
-        # self.connect()
-
     @staticmethod
     def backup_dns():
         __logger = Log("VPNManager.backup_dns")
+        __logger_cp = Log("cp.backup_dns", True)
         __logger.info("Backing up DNS settings")
         src = "/etc/resolv.conf"
         dst = "/mnt/c/Users/rtkfi/dev/settings/resolv.conf"
-        # check if dst file exists
-        if not path.exists(dst):
-            shutil.copyfile(src, dst)
+        command_cp = ["sudo", "cp", src, dst]
+        if not VPNManager._is_backed_up:
+            process_cp = subprocess.Popen(
+                command_cp,
+                stdout=subprocess.PIPE,
+            )
+            while True:
+                if not process_cp.stdout:
+                    break
+                line = process_cp.stdout.readline()
+                if not line:
+                    break
+                line_str = line.decode("utf-8").strip()
+                __logger_cp.debug(line_str)
             __logger.info("DNS backup file created")
         else:
             __logger.warn("DNS backup file already exists")
@@ -56,12 +62,24 @@ class VPNManager:
     @staticmethod
     def fix_dns():
         __logger = Log("VPNManager.fix_dns")
+        __logger_cp = Log("cp.fix_dns", True)
         __logger.info("Fixing DNS settings")
         src = "/mnt/c/Users/rtkfi/dev/settings/resolv.conf"
         dst = "/mnt/wsl/resolv.conf"
-        # check if src file exists
+        command_cp = ["suso", "cp", src, dst]
         if path.exists(src):
-            shutil.copy(src, dst)
+            process_cp = subprocess.Popen(
+                command_cp,
+                stdout=subprocess.PIPE,
+            )
+            while True:
+                if not process_cp.stdout:
+                    break
+                line = process_cp.stdout.readline()
+                if not line:
+                    break
+                line_str = line.decode("utf-8").strip()
+                __logger_cp.debug(line_str)
             __logger.info("DNS settings fixed")
         else:
             __logger.warn("DNS backup file does not exist")
