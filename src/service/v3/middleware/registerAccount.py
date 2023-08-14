@@ -1,21 +1,21 @@
 import logging
 from src.Letus.LetusAccount import LetusAccount
 from src.Controller.v3.LetusSessionController import LetusSessionController
-from src.util.logger import Log, Logger
+from src.util.logger import Log
 
 
-def loginAccount(LA: LetusAccount):
-    __logger = Log("Service.Middle.loginAccount")
-    __logger.info('Account Checking Start')
+def registerAccount(LA: LetusAccount) -> LetusAccount:
+    __logger = Log("Service.Middle.registerAccount")
+    __logger.info("Register Account Start")
 
     if LA.email is None:
-        __logger.error('Cannot Login without `Email`')
-        raise ValueError('loginAccount:EmailError')
+        __logger.error("Email Error")
+        raise ValueError("registerAccount:EmailError")
 
     LSC = LetusSessionController()
 
     try:
-        LSC.login(LA)
+        LSC.register(LA)
     except TimeoutError as e:
         match str(e):
             case "LetusSession:login:__login_letus:Timeout":
@@ -27,7 +27,7 @@ def loginAccount(LA: LetusAccount):
     except Exception as e:
         __logger.error("Unknown Error")
         logging.error(e)
-        raise Exception("loginAccount:UnknownError")
+        raise Exception("registerAccount:UnknownError")
     else:
-        __logger.info('Letus Login Success')
+        __logger.info("Registered Account Successfully")
     return LA

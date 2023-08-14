@@ -45,7 +45,7 @@ class LetusSessionController:
         __logger.debug("Register to letus")
         self.service = Service(self.CHROME_DRIVER_PATH)
         chrome_options = webdriver.ChromeOptions()
-        # chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--headless')
         self.driver = webdriver.Chrome(service=self.service, options=chrome_options)
         self.__login_letus(LA)
         self.load_cookie(LA)

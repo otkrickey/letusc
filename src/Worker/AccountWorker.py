@@ -1,11 +1,9 @@
-import logging
-from xml.dom.minidom import Document
 from src.util.logger import Log
 
 
 def AccountWorker(queue):
     __logger = Log("AccountWorker")
-    print("AccountWorker started")
+    __logger.info("AccountWorker started")
     while True:
         change = queue.get()
 
@@ -26,7 +24,7 @@ def AccountWorker(queue):
                     checkAccount(LA)
                 case "account:register":
                     from src.Letus.LetusAccount import LetusAccount
-                    from src.service.registerAccount import registerAccount
+                    from src.service.v3.middleware.registerAccount import registerAccount
 
                     discord_id = doc["Discord"]["user_id"]
                     user_id = doc["TUS"]["user_id"]
