@@ -58,7 +58,7 @@ class VPNManager:
         __logger = Log("VPNManager.fix_dns")
         __logger.info("Fixing DNS settings")
         src = "/mnt/c/Users/rtkfi/dev/settings/resolv.conf"
-        dst = "/etc/resolv.conf"
+        dst = "/mnt/wsl/resolv.conf"
         # check if src file exists
         if path.exists(src):
             shutil.copy(src, dst)
