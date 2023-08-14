@@ -43,6 +43,7 @@ def test():
 
 def main(TM: TaskManager):
     VC = VPNController()
+    VC.connect()
 
     AccountTaskQueue = queue.Queue()
     ContentTaskQueue = queue.Queue()
