@@ -305,6 +305,7 @@ class VPNController:
             if not VPNController._Manager._is_installed:
                 VPNController._Manager.install()
             if not VPNController._Manager._is_alive:
+                VPNController._Manager.uninstall()
                 VPNController._Manager.fix_dns()
                 VPNController._Manager.install()
             if not VPNController._Manager._is_connected:
