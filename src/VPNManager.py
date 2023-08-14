@@ -66,7 +66,7 @@ class VPNManager:
         __logger.info("Fixing DNS settings")
         src = "/mnt/c/Users/rtkfi/dev/settings/resolv.conf"
         dst = "/mnt/wsl/resolv.conf"
-        command_cp = ["suso", "cp", src, dst]
+        command_cp = ["sudo", "cp", src, dst]
         if path.exists(src):
             process_cp = subprocess.Popen(
                 command_cp,
