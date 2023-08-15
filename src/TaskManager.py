@@ -2,6 +2,8 @@ import queue
 from threading import Thread
 from pymongo import MongoClient
 
+from src.util.logger import Log
+
 
 class TaskManager:
     def __init__(self):
@@ -12,12 +14,13 @@ class TaskManager:
         self.stop_flag = False
 
     def configure(self, watcher_config, worker_config) -> None:
+        __logger = Log("TaskManager.configure")
         self.watchers = []
         self.workers = []
         self.watcher_config = watcher_config
         self.worker_config = worker_config
 
-        print("configuring watchers and workers")
+        __logger.info("Configuring watchers and workers")
         for watcher in watcher_config:
             __thread = Thread(
                 target=self.watcher,
@@ -33,7 +36,8 @@ class TaskManager:
             self.workers.append(__thread)
 
     def start(self):
-        print("starting watchers and workers")
+        __logger = Log("TaskManager.start")
+        __logger.info("Starting watchers and workers")
         for watcher in self.watchers:
             watcher.start()
 
@@ -41,11 +45,12 @@ class TaskManager:
             worker.start()
 
     def watcher(self, collection_name, task_queue):
+        __logger = Log("TaskManager.watcher")
         pipeline = [
             {"$match": {"operationType": "insert"}},
             {"$project": {"fullDocument": 1}},
         ]
-        print(f"watcher registered on collection: `{collection_name}`")
+        __logger.info(f"Watcher registered on collection: `{collection_name}`")
         with self.db[collection_name].watch(pipeline, max_await_time_ms=1000) as stream:
             for change in stream:
                 if self.stop_flag:  # stop the watcher
@@ -54,6 +59,7 @@ class TaskManager:
                 task_queue.put(change)
 
     def stop(self):
-        print("stopping watchers and workers")
+        __logger = Log("TaskManager.stop")
+        __logger.info("Stopping watchers and workers")
         self.stop_flag = True
         self.client.close()
