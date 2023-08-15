@@ -1,4 +1,6 @@
 import logging
+
+from src.Letus.LetusAccount import LetusAccount
 from src.util.logger import Log
 
 
@@ -17,8 +19,7 @@ def AccountWorker(queue):
         try:
             match doc["task"]:
                 case "account:check":
-                    from src.Letus.LetusAccount import LetusAccount
-                    from src.service.v3.checkAccount import CheckAccount
+                    from src.service.v3.CheckAccount import CheckAccount
 
                     try:
                         discord_id = doc["Discord"]["user_id"]
@@ -27,8 +28,7 @@ def AccountWorker(queue):
                     LA = LetusAccount(discord_id)
                     CheckAccount(LA)
                 case "account:register":
-                    from src.Letus.LetusAccount import LetusAccount
-                    from src.service.v3.registerAccount import RegisterAccount
+                    from src.service.v3.RegisterAccount import RegisterAccount
 
                     try:
                         discord_id = doc["Discord"]["user_id"]

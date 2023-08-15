@@ -4,12 +4,11 @@ from src.VPNManager import VPNController, VPNManager
 from src.Letus.LetusAccount import LetusAccount
 from src.Letus.LetusContent import LetusContentV2
 from src.Letus.LetusPage import LetusPageV2
-from src.ServiceManager import ServiceManager
 from src.Worker.AccountWorker import AccountWorker
 from src.Worker.ContentWorker import ContentWorker
 from src.database.ContentManager import ContentHandlerV2, ContentManagerV2
 from src.database.PageManager import PageManagerV2
-from src.service.v3.checkAccount import CheckAccount
+from src.service.v3.CheckAccount import CheckAccount
 from src.service.checkContent import CheckContent
 
 from src.TaskManager import TaskManager
@@ -66,7 +65,6 @@ def main(TM: TaskManager):
 """
 
 if __name__ == "__main__":
-    # SM = ServiceManager()
     TM = TaskManager()
     try:
         # test()
