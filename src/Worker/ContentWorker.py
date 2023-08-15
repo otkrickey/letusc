@@ -1,5 +1,9 @@
+from src.util.logger import Log
+
+
 def ContentWorker(queue):
-    print("ContentWorker started")
+    __logger = Log("Worker.ContentWorker")
+    __logger.info("ContentWorker started")
     while True:
         change = queue.get()
 
@@ -7,6 +11,6 @@ def ContentWorker(queue):
             break
 
         # do something with change
-        print(f"ContentWorker: {change}")
+        __logger.info(f"ContentWorker: {change}")
 
         queue.task_done()
