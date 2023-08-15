@@ -1,7 +1,5 @@
 from os import path
-import shutil
 import threading
-from dotenv import load_dotenv
 import subprocess
 from src.util.logger import Log
 
@@ -137,10 +135,23 @@ class VPNManager:
     @staticmethod
     def uninstall():
         __logger = Log("VPNManager.uninstall")
+        __logger_rm = Log("rm.uninstall", True)
         __logger.info("Uninstalling Cisco VPN client")
         cli_path = "/opt/cisco/"
+        command_rm = ["sudo", "rm", "-rf", cli_path]
         if path.exists(cli_path):
-            shutil.rmtree(cli_path)
+            process_rm = subprocess.Popen(
+                command_rm,
+                stdout=subprocess.PIPE,
+            )
+            while True:
+                if not process_rm.stdout:
+                    break
+                line = process_rm.stdout.readline()
+                if not line:
+                    break
+                line_str = line.decode("utf-8").strip()
+                __logger_rm.debug(line_str)
             __logger.info("Cisco VPN client uninstalled")
         else:
             __logger.warn("Cisco VPN client not found")
