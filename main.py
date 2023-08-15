@@ -9,7 +9,7 @@ from src.Worker.AccountWorker import AccountWorker
 from src.Worker.ContentWorker import ContentWorker
 from src.database.ContentManager import ContentHandlerV2, ContentManagerV2
 from src.database.PageManager import PageManagerV2
-from src.service.v3.checkAccount import checkAccount
+from src.service.v3.checkAccount import CheckAccount
 from src.service.checkContent import CheckContent
 
 from src.TaskManager import TaskManager
@@ -18,7 +18,7 @@ from src.TaskManager import TaskManager
 def test():
     # return
     LA = LetusAccount("601235188571176961")
-    checkAccount(LA)
+    CheckAccount(LA)
     # CheckContent(LA)
     # LP = LetusPageV2("2023:course:126936")
     # PM = PageManagerV2(LP)

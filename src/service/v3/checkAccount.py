@@ -5,8 +5,8 @@ from src.service.v3.middleware.pushAccount import pushAccount
 from src.util.logger import Log
 
 
-def checkAccount(LA: LetusAccount):
-    __logger = Log("Service.checkAccount")
+def CheckAccount(LA: LetusAccount):
+    __logger = Log("Service.CheckAccount")
     try:
         fetchAccount(LA)
         loginAccount(LA)
@@ -14,4 +14,4 @@ def checkAccount(LA: LetusAccount):
     except Exception as e:
         __logger.error(f"Code: `\33[31m{e}\33[0m`")
         __logger.error("\33[31mTerminated Service because of error\33[0m")
-        raise Exception("Service:checkAccount:Terminated")
+        raise Exception("Service:CheckAccount:Terminated")

@@ -1,8 +1,9 @@
+import logging
 from src.util.logger import Log
 
 
 def AccountWorker(queue):
-    __logger = Log("AccountWorker")
+    __logger = Log("Worker.AccountWorker")
     __logger.info("AccountWorker started")
     while True:
         change = queue.get()
@@ -17,31 +18,47 @@ def AccountWorker(queue):
             match doc["task"]:
                 case "account:check":
                     from src.Letus.LetusAccount import LetusAccount
-                    from src.service.v3.checkAccount import checkAccount
+                    from src.service.v3.checkAccount import CheckAccount
 
-                    discord_id = doc["Discord"]["user_id"]
+                    try:
+                        discord_id = doc["Discord"]["user_id"]
+                    except KeyError:
+                        raise KeyError("AccountWorker:check:KeyError")
                     LA = LetusAccount(discord_id)
-                    checkAccount(LA)
+                    CheckAccount(LA)
                 case "account:register":
                     from src.Letus.LetusAccount import LetusAccount
-                    from src.service.v3.middleware.registerAccount import registerAccount
+                    from src.service.v3.registerAccount import RegisterAccount
 
-                    discord_id = doc["Discord"]["user_id"]
-                    user_id = doc["TUS"]["user_id"]
-                    encrypted_password = doc["TUS"]["encrypted_password"]
+                    try:
+                        discord_id = doc["Discord"]["user_id"]
+                        user_id = doc["TUS"]["user_id"]
+                        encrypted_password = doc["TUS"]["encrypted_password"]
+                    except KeyError:
+                        raise KeyError("AccountWorker:register:KeyError")
                     LA = LetusAccount(f"{discord_id}:{user_id}:{encrypted_password}")
-                    registerAccount(LA)
+                    RegisterAccount(LA)
                 # case "account:delete": # TODO
                 case _:
                     print(f"AccountWorker: the task `{doc['task']}` is not defined")
-        except Exception as e:
+        except KeyError as e:
             match str(e):
-                case "Service:checkAccount:Terminated":
+                case "AccountWorker:check:KeyError":
+                    __logger.error("\33[31mTerminated Task because of error\33[0m")
+                case "AccountWorker:register:KeyError":
                     __logger.error("\33[31mTerminated Task because of error\33[0m")
                 case _:
-                    # logging.error(e)
+                    logging.error(e)
                     __logger.error("\33[31mTerminated Task because of error\33[0m")
-                    raise e
+        except Exception as e:
+            match str(e):
+                case "Service:CheckAccount:Terminated":
+                    __logger.error("\33[31mTerminated Task because of error\33[0m")
+                case "Service:RegisterAccount:Terminated":
+                    __logger.error("\33[31mTerminated Task because of error\33[0m")
+                case _:
+                    logging.error(e)
+                    __logger.error("\33[31mTerminated Task because of error\33[0m")
 
         # end the task
         queue.task_done()
