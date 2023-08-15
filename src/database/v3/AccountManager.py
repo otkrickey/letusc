@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.errors import WriteError
 
-from src.Letus.LetusAccount import LetusAccount
+from src.Letus.v2.LetusAccount import LetusAccount
 from src.util.logger import Logger, Log
 from src.util.static import mongo_url
 

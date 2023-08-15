@@ -1,43 +1,10 @@
 import queue
-import sys
-from src.VPNManager import VPNController, VPNManager
-from src.Letus.LetusAccount import LetusAccount
-from src.Letus.LetusContent import LetusContentV2
-from src.Letus.LetusPage import LetusPageV2
-from src.Worker.AccountWorker import AccountWorker
-from src.Worker.ContentWorker import ContentWorker
-from src.database.ContentManager import ContentHandlerV2, ContentManagerV2
-from src.database.PageManager import PageManagerV2
-from src.service.v3.CheckAccount import CheckAccount
-from src.service.checkContent import CheckContent
 
 from src.TaskManager import TaskManager
-
-
-def test():
-    # return
-    LA = LetusAccount("601235188571176961")
-    CheckAccount(LA)
-    # CheckContent(LA)
-    # LP = LetusPageV2("2023:course:126936")
-    # PM = PageManagerV2(LP)
-    # PM.pull()
-    # LP = LetusPageV2('2023:course:126936:1060750704626643034:1074363874112983092:601235188571176961')
-    # PM = PageManagerV2(LP)
-    # PM.push()
-
-    # LC = LetusContentV2(LP)
-    # CM = ContentManagerV2(LC)
-    # CM.push()
-
-    # print(LP.__dict__)
-    # print(LP.LA.__dict__)
-    # print(CM.LC.__dict__ | {'document': None})
-    # print(CM.LCp.__dict__ | {'document': None})
-    # for section in LC.sections:
-    #     print(section.__dict__)
-    #     for module in section.modules:
-    #         print(module.__dict__)
+from src.test import test
+from src.VPNManager import VPNController
+from src.Worker.AccountWorker import AccountWorker
+from src.Worker.ContentWorker import ContentWorker
 
 
 def main(TM: TaskManager):
@@ -67,7 +34,7 @@ def main(TM: TaskManager):
 if __name__ == "__main__":
     TM = TaskManager()
     try:
-        # test()
+        test()
         main(TM)
         while True:
             pass

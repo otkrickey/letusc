@@ -1,16 +1,16 @@
 import logging
-from src.Letus.LetusAccount import LetusAccount
+from src.Letus.v2.LetusAccount import LetusAccount
 from src.Controller.v3.LetusSessionController import LetusSessionController
 from src.util.logger import Log, Logger
 
 
 def loginAccount(LA: LetusAccount):
     __logger = Log("Service.Middle.loginAccount")
-    __logger.info('Account Checking Start')
+    __logger.info("Account Checking Start")
 
     if LA.email is None:
-        __logger.error('Cannot Login without `Email`')
-        raise ValueError('loginAccount:EmailError')
+        __logger.error("Cannot Login without `Email`")
+        raise ValueError("loginAccount:EmailError")
 
     LSC = LetusSessionController()
 
@@ -29,5 +29,5 @@ def loginAccount(LA: LetusAccount):
         logging.error(e)
         raise Exception("loginAccount:UnknownError")
     else:
-        __logger.info('Letus Login Success')
+        __logger.info("Letus Login Success")
     return LA

@@ -1,5 +1,5 @@
 import logging
-from src.Letus.LetusAccount import LetusAccount
+from src.Letus.v2.LetusAccount import LetusAccount
 from src.database.v3.AccountManager import AccountManager
 from src.util.logger import Log
 

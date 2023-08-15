@@ -1,8 +1,8 @@
-from os import path
-import threading
 import subprocess
-from src.util.logger import Log
+import threading
+from os import path
 
+from src.util.logger import Log
 from src.util.static import env
 
 

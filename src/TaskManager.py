@@ -1,5 +1,5 @@
-import queue
 from threading import Thread
+
 from pymongo import MongoClient
 
 from src.util.logger import Log

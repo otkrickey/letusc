@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from src.Letus.LetusAccount import LetusAccount
+from src.Letus.v2.LetusAccount import LetusAccount
 from src.util import auth_url, dotenv_path, origin_url
 from src.util.logger import Log
 
@@ -45,7 +45,7 @@ class LetusSessionController:
         __logger.debug("Register to letus")
         self.service = Service(self.CHROME_DRIVER_PATH)
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--headless')
+        chrome_options.add_argument("--headless")
         self.driver = webdriver.Chrome(service=self.service, options=chrome_options)
         self.__login_letus(LA)
         self.load_cookie(LA)

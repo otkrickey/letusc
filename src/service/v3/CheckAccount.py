@@ -1,4 +1,4 @@
-from src.Letus.LetusAccount import LetusAccount
+from src.Letus.v2.LetusAccount import LetusAccount
 from src.service.v3.middleware.fetchAccount import fetchAccount
 from src.service.v3.middleware.loginAccount import loginAccount
 from src.service.v3.middleware.pushAccount import pushAccount

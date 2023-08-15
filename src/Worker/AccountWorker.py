@@ -1,6 +1,6 @@
 import logging
 
-from src.Letus.LetusAccount import LetusAccount
+from src.Letus.v2.LetusAccount import LetusAccount
 from src.util.logger import Log
 
 
@@ -38,6 +38,15 @@ def AccountWorker(queue):
                         raise KeyError("AccountWorker:register:KeyError")
                     LA = LetusAccount(f"{discord_id}:{user_id}:{encrypted_password}")
                     RegisterAccount(LA)
+                case "account:status":
+                    from src.service.v3.StatusAccount import StatusAccount
+
+                    try:
+                        discord_id = doc["Discord"]["user_id"]
+                    except KeyError:
+                        raise KeyError("AccountWorker:status:KeyError")
+                    LA = LetusAccount(discord_id)
+                    StatusAccount(LA)
                 # case "account:delete": # TODO
                 case _:
                     print(f"AccountWorker: the task `{doc['task']}` is not defined")

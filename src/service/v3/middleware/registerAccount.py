@@ -1,5 +1,5 @@
 import logging
-from src.Letus.LetusAccount import LetusAccount
+from src.Letus.v2.LetusAccount import LetusAccount
 from src.Controller.v3.LetusSessionController import LetusSessionController
 from src.util.logger import Log
 
