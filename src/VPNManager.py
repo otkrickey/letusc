@@ -131,6 +131,7 @@ class VPNManager:
             line_str = line.decode("utf-8").strip()
             __logger_VPN.debug(line_str)
         process_install.wait()
+        self.status()
 
     @staticmethod
     def uninstall():
@@ -203,6 +204,8 @@ class VPNManager:
             __logger.error("Failed to connect to VPN")
             for errorMessage in errorMessages:
                 __logger.error(errorMessage)
+            self.status()
+            self.connect()
         else:
             __logger.warn("Failed to connect to VPN")
 
