@@ -3,5 +3,6 @@
     "markdown.styles": [
         "https://use.fontawesome.com/releases/v5.7.1/css/all.css"
     ],
-    "markdown-mermaid.darkModeTheme": "dark"
+    "markdown-mermaid.darkModeTheme": "dark",
+    "editor.defaultFormatter": "ms-python.black-formatter"
 }
