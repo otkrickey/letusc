@@ -18,6 +18,14 @@ class AccountBase(BaseModel):
     Discord: DiscordUserBase = field(init=False)
     Letus: LetusUserBase = field(init=False)
 
+    def to_api(self) -> dict:
+        return {
+            "student_id": self.student_id,
+            "discord_id": self.discord_id,
+            "Letus": self.Letus.to_api(),
+            "Discord": self.Discord.to_api(),
+        }
+
 
 __all__ = [
     "AccountBase",
