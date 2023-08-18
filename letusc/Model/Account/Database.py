@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from pymongo.errors import WriteError
 
 from letusc.logger import Log
-from letusc.Model.Letus import LetusUser, LetusUserWithPassword
+from letusc.Model import Letus
 from letusc.SessionManager import SessionManager
 from letusc.util.static import mongo_url
 
@@ -19,10 +19,10 @@ class Database(AccountBase):
     def check(self):
         __logger = Log("Model.Account.Database.check")
         __logger.debug("Checking account info")
-        if isinstance(self.Letus, LetusUserWithPassword):
+        if not isinstance(self.Letus, Letus.LetusUserWithCookies):
             __logger.info("Cookie Error")
             raise ValueError("Model.Account.Database.check:CookieError")
-        if isinstance(self.Letus, LetusUser):
+        elif not isinstance(self.Letus, Letus.LetusUserWithPassword):
             __logger.info("Password Error")
             raise ValueError("Model.Account.Database.check:PasswordError")
         __logger.info("Account is valid")
