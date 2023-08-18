@@ -29,6 +29,9 @@ class DiscordUserBase(BaseModel):
             else:
                 return DiscordUser(discord_id, username, discriminator)
 
+    def to_api(self) -> dict:
+        return {"username": self.username, "discriminator": self.discriminator}
+
 
 @dataclass
 class DiscordUserAny(DiscordUserBase):
