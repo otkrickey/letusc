@@ -5,7 +5,7 @@ from letusc.Model.Discord import DiscordUser
 from letusc.Model.Letus import LetusUser
 
 from .AccountBase import AccountBase
-from .Database import Database
+from .AccountDatabase import Database
 
 
 @dataclass
