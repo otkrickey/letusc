@@ -56,10 +56,8 @@ class LetusUserBase(BaseModel):
             cookies = [cookie.to_api() for cookie in self.cookies]
         return {
             "email": self.email,
-            "Letus": {
-                "encrypted_password": self.encrypted_password,
-                "cookies": cookies,
-            },
+            "encrypted_password": self.encrypted_password,
+            "cookies": cookies,
         }
 
 
