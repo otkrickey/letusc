@@ -63,3 +63,8 @@ class TaskManager:
         __logger.info("Stopping watchers and workers")
         self.stop_flag = True
         self.client.close()
+
+
+__all__ = [
+    "TaskManager",
+]

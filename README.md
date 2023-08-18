@@ -113,8 +113,30 @@ AM2 --> M2
 LetusPage --> LetusContent
 ```
 
-```
-
+```json
+[
+    {
+        "task": "account:status",
+        "discord_id": "601235188571176961"
+    },
+    {
+        "task": "account:login",
+        "multi_id": "601235188571176961",
+    },
+    {
+        "task": "account:register",
+        "student_id": "7322023",
+        "discord_id": "601235188571176961",
+        "Letus": {
+            "encrypted_password": "password",
+            "email": "email"
+        },
+        "Discord": {
+            "username": "otkrickey",
+            "discriminator": "otkrickey"
+        }
+    }
+]
 
 
 

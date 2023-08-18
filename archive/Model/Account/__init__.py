@@ -1,10 +1,11 @@
+import logging
 from dataclasses import dataclass, field
-from tkinter import W
 from typing import Union
 
 from pymongo import MongoClient
 from pymongo.errors import WriteError
 
+from letusc import Session
 from letusc.logger import Log
 from letusc.util.static import mongo_url
 
@@ -41,17 +42,11 @@ class Account:
     )
 
     def __post_init__(self):
-        self.pull()
-        print(f"!!!!DEBUG!!!!: {id(self)} in {repr(self)}")
-        
-
-    def export(self):
-        return {
-            "student_id": self.student_id,
-            "discord_id": self.discord_id,
-            "Letus": self.Letus.to_api(),
-            "Discord": self.Discord.to_api(),
-        }
+        account = self.pull()
+        self.student_id = account["student_id"]
+        self.discord_id = account["discord_id"]
+        self.Letus = LetusUser.from_api(account)
+        self.Discord = DiscordUser.from_api(account)
 
     def check(self):
         __logger = Log("Model.Account.check")
@@ -65,7 +60,7 @@ class Account:
         __logger.info("Account is valid")
         return
 
-    def pull(self):
+    def pull(self) -> dict:
         __logger = Log("Model.Account.pull")
         __logger.debug("Pulling data from MongoDB")
         filter = {}
@@ -82,10 +77,7 @@ class Account:
         if account is None:
             __logger.info("No data found")
             raise ValueError("Model.Account.pull:NotFound")
-        self.student_id = account["student_id"]
-        self.discord_id = account["discord_id"]
-        self.Letus = LetusUser.from_api(account)
-        self.Discord = DiscordUser.from_api(account)
+        return account
 
     def push(self):
         __logger = Log("Model.Account.push")
@@ -113,6 +105,14 @@ class Account:
             __logger.debug("Account registered")
             return
 
+    def export(self):
+        return {
+            "student_id": self.student_id,
+            "discord_id": self.discord_id,
+            "Letus": self.Letus.to_api(),
+            "Discord": self.Discord.to_api(),
+        }
+
     def update(self):
         __logger = Log("Model.Account.update")
         __logger.debug("Updating account")
@@ -133,3 +133,22 @@ class Account:
         else:
             __logger.debug("Account updated")
             return
+
+    def login(self):
+        __logger = Log("Model.Task.Account.login")
+        session = Session.Manager(self)
+        try:
+            session.login()
+        except TimeoutError as e:
+            match str(e):
+                case "Session.Automator.login_letus:Timeout":
+                    raise e
+        except ValueError as e:
+            match str(e):
+                case "Session.Automator.login_letus:PasswordError":
+                    raise e
+        except Exception as e:
+            logging.error(e)
+            raise Exception("Model.Task.Account.login:UnknownError")
+        else:
+            __logger.info("Logged in successfully")

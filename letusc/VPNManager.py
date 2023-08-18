@@ -327,14 +327,6 @@ class VPNController:
             VPNController.cv.notify()
 
 
-# TODO: VPNManager
-# - create auto method
-#    - automatically connect to VPN
-#    - run auto() per hour default
-#    - when receive request to connect to VPN & 10 minutes have passed since last auto()
-#    - order
-#        1. check() to see if CLI is usable
-#            - if not, uninstall() -> install()
-#        2. status() to see if connected to VPN
-#            - if connected & an hour has passed since last auto(), disconnect()
-#        3. connect() to connect to VPN
+__all__ = [
+    "VPNController",
+]

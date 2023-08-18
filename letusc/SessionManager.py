@@ -1,17 +1,19 @@
 import time
-from letusc.logger import Log
-from letusc import model as Model
+
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+
+from letusc.logger import Log
+from letusc.Model import Letus
+from letusc.Model.Account import AccountBase
 from letusc.util import auth_url, env, origin_url
 
 
-class Automator:
-    def __init__(self, account: Model.Account):
-        print(f"!!!!DEBUG!!!!: {id(account)} in {repr(self)}")
+class SessionAutomator:
+    def __init__(self, account: AccountBase):
         self.CHROME_DRIVER_PATH = env("CHROME_DRIVER_PATH")
         self.account = account
 
@@ -146,7 +148,7 @@ class Automator:
         new_cookies = []
         for new_cookie in cookies:
             if "MoodleSession" in new_cookie["name"]:
-                cookie = Model.Cookie(
+                cookie = Letus.Cookie(
                     name=new_cookie["name"],
                     value=new_cookie["value"],
                     year=new_cookie["name"].replace("MoodleSession", ""),
@@ -154,7 +156,7 @@ class Automator:
                 new_cookies.append(cookie)
                 text = f'"\33[36mMoodleSession{cookie.year}\33[0m": "\33[36m{cookie.value}\33[0m"'
                 __logger.info("Cookie found: {" + text + "}")
-        if isinstance(self.account.Letus, Model.LetusUserWithCookies):
+        if isinstance(self.account.Letus, Letus.LetusUserWithCookies):
             for new_cookie in new_cookies:
                 for cookie in self.account.Letus.cookies:
                     if new_cookie.year == cookie.year:
@@ -164,4 +166,22 @@ class Automator:
                     self.account.Letus.cookies.append(new_cookie)
         else:
             self.account.Letus.cookies = new_cookies
-            self.account.Letus = Model.LetusUser.from_api(self.account.Letus.to_api())
+            self.account.Letus = Letus.LetusUser.from_api(self.account.Letus.to_api())
+
+
+class SessionManager(SessionAutomator):
+    def login(self):
+        __logger = Log("SessionManager.login")
+        __logger.debug("Login to letus")
+        if isinstance(self.account.Letus, Letus.LetusUserWithCookies):
+            for cookie in self.account.Letus.cookies:
+                text = f'"\33[36m{cookie.name}\33[0m": "\33[36m{cookie.value}\33[0m"'
+                __logger.info("Cookie found: {" + text + "}")
+        else:
+            __logger.warn("Cookie not found")
+        self.register()
+
+
+__all__ = [
+    "SessionManager",
+]

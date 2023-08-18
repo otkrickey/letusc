@@ -1,13 +1,11 @@
 import logging
-from math import e
 from letusc.logger import Log
-from letusc import model as Model
-from letusc import session as Session
+from letusc import Model
+from letusc import Session
 
 
 class Account:
     def __init__(self, account: Model.Account):
-        print(f"!!!!DEBUG!!!!: {id(account)} in {repr(self)}")
         self.account = account
 
     # middleware function

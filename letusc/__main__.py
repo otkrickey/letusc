@@ -1,8 +1,8 @@
 import queue
 
-from letusc import worker as Worker
-from letusc.test import test
+from letusc import Worker
 from letusc.TaskManager import TaskManager
+from letusc.test import test
 from letusc.VPNManager import VPNController
 
 
@@ -25,10 +25,6 @@ def main(TM: TaskManager):
     TM.configure(watcher_config, worker_config)
     TM.start()
 
-
-"""
-/home/otkrickey/otkrickey/letus_bot/letus-scraper/.venv/bin/python3.11 /home/otkrickey/otkrickey/letus_bot/letus-scraper/main.py -l info -e 1
-"""
 
 if __name__ == "__main__":
     TM = TaskManager()

@@ -1,6 +1,6 @@
-from .account import Account
-from .account.discord import DiscordMessage, DiscordUser, DiscordUserFull
-from .account.letus import (
+from .Account import Account
+from .Account.discord import DiscordMessage, DiscordUser, DiscordUserFull
+from .Account.letus import (
     Cookie,
     LetusUser,
     LetusUserWithCookies,
