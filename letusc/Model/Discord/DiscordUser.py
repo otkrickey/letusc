@@ -17,14 +17,12 @@ class DiscordUserBase(BaseModel):
         try:
             discord_id = object["discord_id"]
         except KeyError as e:
-            cls.__logger.error(f"object must have discord_id: {e}")
-            raise KeyError("Model.DiscordUserBase.from_api:KeyError")
+            raise KeyError("Model.DiscordUserBase.from_api:KeyError") from e
         else:
             try:
                 username = object["Discord"]["username"]
                 discriminator = object["Discord"]["discriminator"]
             except KeyError as e:
-                cls.__logger.warn(f"object has no key: {e}")
                 return DiscordUserAny(discord_id)
             else:
                 return DiscordUser(discord_id, username, discriminator)

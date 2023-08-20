@@ -22,8 +22,7 @@ class Cookie(BaseModel):
             value = cookie["value"]
             year = cookie["year"]
         except KeyError as e:
-            cls.__logger.error(f"object must have {e}")
-            raise KeyError("Model.Cookie.from_api:KeyError")
+            raise KeyError("Model.Cookie.from_api:KeyError") from e
         else:
             return cls(name=name, value=value, year=year)
 

@@ -26,14 +26,12 @@ class LetusUserBase(BaseModel):
         try:
             student_id = object["student_id"]
         except KeyError as e:
-            cls.__logger.error(f"object must have student_id: {e}")
-            raise KeyError("Model.LetusUserBase.from_api:KeyError")
+            raise KeyError("Model.LetusUserBase.from_api:KeyError") from e
         else:
             try:
                 encrypted_password = object["Letus"]["encrypted_password"]
                 cookies = object["Letus"]["cookies"]
             except KeyError as e:
-                cls.__logger.warn(f"object has no key: {e}")
                 return LetusUser(student_id=student_id)
             else:
                 if encrypted_password and cookies:

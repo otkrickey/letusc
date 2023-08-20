@@ -5,6 +5,7 @@ from pymongo.errors import WriteError
 
 from letusc.logger import Log
 from letusc.Model import Letus
+from letusc.Model.BaseDatabase import BaseDatabase
 from letusc.SessionManager import SessionManager
 from letusc.util.static import mongo_url
 
@@ -12,13 +13,17 @@ from .AccountBase import AccountBase
 
 
 @dataclass
-class Database(AccountBase):
-    __logger = Log("Model.Database")
+class AccountDatabase(BaseDatabase, AccountBase):
+    __logger = Log("Model.Account.Database")
     collection = MongoClient(mongo_url())["letus"]["accountsV2"]
 
     def check(self):
         __logger = Log("Model.Account.Database.check")
         __logger.debug("Checking account info")
+        attributes = ["multi_id", "student_id", "discord_id", "Letus", "Discord"]
+        if any(hasattr(self, attribute) for attribute in attributes):
+            __logger.info("Attribute Error")
+            raise ValueError("Model.Account.Database.check:AttributeError")
         if not isinstance(self.Letus, Letus.LetusUserWithCookies):
             __logger.info("Cookie Error")
             raise ValueError("Model.Account.Database.check:CookieError")
@@ -52,41 +57,34 @@ class Database(AccountBase):
         __logger.debug("Pushing data to MongoDB")
         try:
             self.check()
+            self.update()
         except ValueError as e:
             match str(e):
                 case "Model.Account.Database.check:CookieError":
                     return self.register()
+                case "Model.Account.Database.update:WriteError":
+                    return self.register()
                 case _:
                     raise e
-        else:
-            return self.update()
+        return
 
     def register(self) -> None:
         __logger = Log("Model.Account.Database.register")
-        __logger.debug("Registering new account")
+        __logger.debug("Registering account info")
         try:
             self.collection.insert_one(self.to_api())
         except WriteError as e:
-            __logger.error(f"Failed to register new account: {e}")
-            raise WriteError("Model.Account.Database.push:WriteError")
-        else:
-            __logger.debug("Account registered")
-            return
+            raise WriteError("Model.Account.Database.push:WriteError") from e
+        return
 
     def update(self) -> None:
         __logger = Log("Model.Account.Database.update")
         __logger.debug("Updating account")
-        filter = {"discord_id": self.discord_id}
-        update = {"$set": self.to_api()}
         try:
-            __logger.debug("Updating account")
-            self.collection.update_one(filter, update)
+            self.collection.replace_one({"discord_id": self.discord_id}, self.to_api())
         except WriteError as e:
-            __logger.error(f"Failed to update account: {e}")
-            raise WriteError("Model.Account.Database.update:WriteError")
-        else:
-            __logger.debug("Account updated")
-            return
+            raise WriteError("Model.Account.Database.update:WriteError") from e
+        return
 
     def login(self) -> None:
         __logger = Log("Model.Account.Database.login")
