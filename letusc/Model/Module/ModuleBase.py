@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Optional
 
 from letusc.logger import Log
 from letusc.Model.BaseModel import BaseModel
@@ -6,19 +7,23 @@ from letusc.URLManager import URLManager
 
 
 @dataclass
-class PageBase(BaseModel):
-    __logger = Log("Model.PageBase")
-    code: str  # `year:page_type:page_id`
+class ModuleBase(BaseModel):
+    __logger = Log("Model.ModuleBase")
+    code: str  # `year:page_type:page_id:content_type:content_id:module_type:module_id`
 
     year: str = field(init=False)
     page_type: str = field(init=False)
     page_id: str = field(init=False)
+    content_type: str = field(init=False)
+    content_id: str = field(init=False)
+    module_type: str = field(init=False)
+    module_id: str = field(init=False)
     url: str = field(init=False)
 
-    accounts: list[str] = field(init=False)  # `multi_id`[]
-
-    title: str = field(init=False)
-    content: list[str] = field(init=False)  # `content_type:content_id:content_hash`[]
+    title: Optional[str] = field(init=False)
+    module_url: Optional[str] = field(init=False)
+    main: Optional[str] = field(init=False)
+    # uploaded_at: str = field(init=False) only type=resource
 
     hash: str = field(init=False)
     timestamp: str = field(init=False)
@@ -26,40 +31,40 @@ class PageBase(BaseModel):
     def from_api(self, object: dict) -> None:
         try:
             code = object["code"]
+            if not isinstance(code, str):
+                raise ValueError
             code_split = code.split(":")
-            if len(code_split) != 3:
+            if len(code_split) != 7:
                 raise ValueError
-
-            accounts = object["accounts"]
-            if not isinstance(accounts, list):
-                raise ValueError
-            if not all(isinstance(account, str) for account in accounts):
-                raise ValueError
-            self.accounts = accounts
-
             title = object["title"]
+            module_url = object["module_url"]
+            main = object["main"]
             hash = object["hash"]
             timestamp = object["timestamp"]
-            content = object["content"]
             if not isinstance(title, str):
-                raise ValueError
+                title = None
+            if not isinstance(module_url, str):
+                module_url = None
+            if not isinstance(main, str):
+                main = None
             if not isinstance(hash, str):
                 raise ValueError
             if not isinstance(timestamp, str):
                 raise ValueError
-            if not isinstance(content, list):
-                raise ValueError
-            if not all(isinstance(content, str) for content in content):
-                raise ValueError
         except Exception as e:
-            raise ValueError("Model.Page.from_api:InvalidData") from e
+            raise ValueError("Model.Module.from_api:InvalidData") from e
         else:
             self.year = code_split[0]
             self.page_type = code_split[1]
             self.page_id = code_split[2]
+            self.content_type = code_split[3]
+            self.content_id = code_split[4]
+            self.module_type = code_split[5]
+            self.module_id = code_split[6]
             self.url = URLManager.getPage(self.year, self.page_type, self.page_id)
             self.title = title
-            self.content = content
+            self.module_url = module_url
+            self.main = main
             self.hash = hash
             self.timestamp = timestamp
         return
@@ -67,14 +72,9 @@ class PageBase(BaseModel):
     def to_api(self) -> dict:
         return {
             "code": self.code,
-            "accounts": self.accounts,
             "title": self.title,
-            "content": self.content,
+            "module_url": self.module_url,
+            "main": self.main,
             "hash": self.hash,
             "timestamp": self.timestamp,
         }
-
-
-__all__ = [
-    "PageBase",
-]

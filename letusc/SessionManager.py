@@ -8,7 +8,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from letusc.logger import Log
 from letusc.Model import Letus
-from letusc.Model.Account import AccountBase
+from letusc.Model.Account.AccountBase import AccountBase
 from letusc.util import auth_url, env, origin_url
 
 

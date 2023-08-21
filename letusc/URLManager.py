@@ -5,7 +5,7 @@ class URLManager:
     __logger = Log("URLManager")
 
     @staticmethod
-    def getPage(page_code: str):
+    def getPageByCode(page_code: str):
         __logger = Log("URLManager.getPage")
         try:
             code_split = page_code.split(":")
@@ -17,7 +17,12 @@ class URLManager:
         except Exception as e:
             raise ValueError("URLManager.getPage:InvalidCode") from e
         else:
-            prefix = "https://letus.ed.tus.ac.jp"
-            middle = f"/{year}" if year != "2023" else ""
-            suffix = f"/course/view.php?id={object_id}" if type == "course" else ""
-            return f"{prefix}{middle}{suffix}"
+            return URLManager.getPage(year, type, object_id)
+
+    @staticmethod
+    def getPage(year: str, type: str, object_id: str):
+        __logger = Log("URLManager.getPage")
+        prefix = "https://letus.ed.tus.ac.jp"
+        middle = f"/{year}" if year != "2023" else ""
+        suffix = f"/course/view.php?id={object_id}" if type == "course" else ""
+        return f"{prefix}{middle}{suffix}"
