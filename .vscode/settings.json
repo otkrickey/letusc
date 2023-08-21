@@ -4,5 +4,11 @@
         "https://use.fontawesome.com/releases/v5.7.1/css/all.css"
     ],
     "markdown-mermaid.darkModeTheme": "dark",
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
 }

@@ -1,7 +1,6 @@
-from .Page import Page
-from .PageBase import PageBase
+from .Page import Page, CoursePage
 
 __all__ = [
     "Page",
-    "PageBase",
+    "CoursePage",
 ]
