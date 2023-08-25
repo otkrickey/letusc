@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Optional
 
 from letusc.logger import Log
@@ -23,10 +24,10 @@ class ModuleBase(BaseModel):
     title: Optional[str] = field(init=False)
     module_url: Optional[str] = field(init=False)
     main: Optional[str] = field(init=False)
-    # uploaded_at: str = field(init=False) only type=resource
+    uploaded_at: Optional[str] = field(init=False)
 
     hash: str = field(init=False)
-    timestamp: str = field(init=False)
+    timestamp: datetime = field(init=False)
 
     def from_api(self, object: dict) -> None:
         try:
@@ -39,6 +40,7 @@ class ModuleBase(BaseModel):
             title = object["title"]
             module_url = object["module_url"]
             main = object["main"]
+            uploaded_at = object["uploaded_at"]
             hash = object["hash"]
             timestamp = object["timestamp"]
             if not isinstance(title, str):
@@ -47,10 +49,10 @@ class ModuleBase(BaseModel):
                 module_url = None
             if not isinstance(main, str):
                 main = None
-            if not isinstance(hash, str):
-                raise ValueError
-            if not isinstance(timestamp, str):
-                raise ValueError
+            if not isinstance(uploaded_at, str):
+                uploaded_at = None
+            if not isinstance(timestamp, datetime):
+                timestamp = datetime.now()
         except Exception as e:
             raise ValueError("Model.Module.from_api:InvalidData") from e
         else:
@@ -65,6 +67,7 @@ class ModuleBase(BaseModel):
             self.title = title
             self.module_url = module_url
             self.main = main
+            self.uploaded_at = uploaded_at
             self.hash = hash
             self.timestamp = timestamp
         return
@@ -75,6 +78,7 @@ class ModuleBase(BaseModel):
             "title": self.title,
             "module_url": self.module_url,
             "main": self.main,
+            "uploaded_at": self.uploaded_at,
             "hash": self.hash,
             "timestamp": self.timestamp,
         }

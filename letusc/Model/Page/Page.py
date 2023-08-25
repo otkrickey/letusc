@@ -1,9 +1,6 @@
 from dataclasses import dataclass
-from typing import Union
 
 from letusc.logger import Log
-from letusc.Model.Account import Account
-from letusc.URLManager import URLManager
 
 from .PageBase import PageBase
 from .PageDatabase import PageDatabase
@@ -18,7 +15,7 @@ class Page(PageDatabase, PageBase):
         self.from_api(object)
 
     @classmethod
-    def from_code(cls, code: str) -> Union["CoursePage", "Page"]:
+    def from_code(cls, code: str) -> "Page":
         try:
             code_split = code.split(":")
             if len(code_split) != 3:
@@ -43,4 +40,5 @@ class CoursePage(Page):
 
 __all__ = [
     "Page",
+    "CoursePage",
 ]

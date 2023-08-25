@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Union
 
 from letusc.logger import Log
 from letusc.Model import Discord, Letus
 from letusc.Model.Account import Account
-from letusc.Task.BaseTask import BaseTask
+
+from .BaseTask import BaseTask
 
 
 @dataclass
@@ -17,7 +17,7 @@ class AccountTask(BaseTask):
         pass
 
     @classmethod
-    def from_api(cls, task: dict) -> Union["Login", "Status"]:
+    def from_api(cls, task: dict) -> "AccountTask":
         account = Account(task["discord_id"])
 
         action = task["task"].split(":")[1]
@@ -64,7 +64,7 @@ class Login(AccountTask):
 
 
 @dataclass
-class Status(AccountTask):
+class Status(AccountTask):  # NOTE: in development
     __logger = Log("Task.AccountTask.Status")
     # [auto]
     student_id: str

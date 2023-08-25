@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Union
 
 from letusc.logger import Log
 
@@ -16,7 +15,7 @@ class Module(ModuleDatabase, ModuleBase):
         self.from_api(object)
 
     @classmethod
-    def from_code(cls, code: str) -> Union["LabelModule", "PageModule", "URLModule"]:
+    def from_code(cls, code: str) -> "Module":
         try:
             code_split = code.split(":")
             if len(code_split) != 7:
@@ -33,14 +32,6 @@ class Module(ModuleDatabase, ModuleBase):
                     return URLModule(code)
                 case _:
                     raise ValueError("Model.Module.from_api:UnknownType")
-
-
-# @dataclass
-# class ResourceModule(Module):
-#     __logger = Log("Model.Module.ResourceModule")
-
-#     def __post_init__(self):
-#         super().___post_init___()
 
 
 @dataclass
@@ -102,9 +93,35 @@ class URLModule(Module):
         self.from_api(object)
 
 
+@dataclass
+class ResourceModule(Module):
+    __logger = Log("Model.Module.ResourceModule")
+
+    title: str = field(init=False)
+    module_url: str = field(init=False)
+    uploaded_at: str = field(init=False)
+
+    def __post_init__(self):
+        object = self.pull()
+        try:
+            title = object["title"]
+            module_url = object["module_url"]
+            uploaded_at = object["uploaded_at"]
+            if not isinstance(title, str):
+                raise ValueError
+            if not isinstance(module_url, str):
+                raise ValueError
+            if not isinstance(uploaded_at, str):
+                raise ValueError
+        except Exception as e:
+            raise ValueError("Model.Module.ResourceModule:InvalidData") from e
+        self.from_api(object)
+
+
 __all__ = [
     "Module",
     "LabelModule",
     "PageModule",
     "URLModule",
+    "ResourceModule",
 ]
