@@ -18,8 +18,8 @@ class PageDatabase(BaseDatabase, PageBase):
     def check(self) -> None:
         __logger = Log("Model.Page.Database.check")
         __logger.debug("Checking page info")
-        attributes = ["code", "accounts", "title", "content", "hash", "timestamp"]
-        if any(hasattr(self, attribute) for attribute in attributes):
+        attributes = ["code", "accounts", "title", "contents", "hash", "timestamp"]
+        if any(not hasattr(self, attribute) for attribute in attributes):
             __logger.info("Attribute Error")
             raise ValueError("Model.Page.Database.check:AttributeError")
         __logger.info("Page is valid")
@@ -27,7 +27,7 @@ class PageDatabase(BaseDatabase, PageBase):
 
     def pull(self) -> dict:
         __logger = Log("Model.Page.Database.pull")
-        __logger.debug("Pulling page info from MongoDB")
+        __logger.debug(f"Pulling page info from MongoDB: {self.code}")
         filter = {}
         filter.update({"code": self.code})
         object = self.collection.find_one(filter)
@@ -41,13 +41,15 @@ class PageDatabase(BaseDatabase, PageBase):
         __logger.debug("Pushing page info to MongoDB")
         try:
             self.check()
-            self.update()
+            self.pull()
         except ValueError as e:
             match str(e):
-                case "Model.Page.Database.update:WriteError":
+                case "Model.Page.Database.pull:NotFound":
                     return self.register()
                 case _:
                     raise e
+        else:
+            self.update()
         return
 
     def register(self) -> None:

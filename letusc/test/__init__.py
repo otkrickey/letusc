@@ -6,7 +6,9 @@ def test():
     # test_pages()
     # test_content()
     # test_module()
-    # exit(0)  # debug: exit here
+    # test_parser()
+    test_content_task()
+    exit(0)  # debug: exit here
     pass
 
 
@@ -62,4 +64,34 @@ def test_module():
     module3 = Module.from_code("2023:course:126936:section:1081922:page:828743")
     __logger.debug(module3.__dict__)
     __logger.debug(type(module3))
+    pass
+
+
+def test_parser():
+    __logger = Log("test.test_parser")
+    __logger.info("test_parser")
+    from letusc.PageParser import PageParser
+    from letusc.Model.Account import Account
+
+    account = Account("7322023")
+    parser = PageParser(account, "2023:course:126936")
+    parser.parse()
+
+    # show comparison
+    parser.compare()
+
+    pass
+
+
+def test_content_task():
+    from letusc.Task.Content import ContentTask
+
+    task = ContentTask.from_api(
+        {
+            "task": "content:fetch",
+            "discord_id": "601235188571176961",
+            "code": "2023:course:126936",
+        }
+    )
+    task.run()
     pass

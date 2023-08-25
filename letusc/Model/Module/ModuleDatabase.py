@@ -18,8 +18,16 @@ class ModuleDatabase(BaseDatabase, ModuleBase):
     def check(self) -> None:
         __logger = Log("Model.Module.Database.check")
         __logger.debug("Checking module info")
-        attributes = ["code", "title", "main", "modules", "hash", "timestamp"] # TODO: Check this
-        if any(hasattr(self, attribute) for attribute in attributes):
+        attributes = [
+            "code",
+            "title",
+            "module_url",
+            "main",
+            "uploaded_at",
+            "hash",
+            "timestamp",
+        ]
+        if any(not hasattr(self, attribute) for attribute in attributes):
             __logger.info("Attribute Error")
             raise ValueError("Model.Module.Database.check:AttributeError")
         __logger.info("Module is valid")
@@ -27,7 +35,7 @@ class ModuleDatabase(BaseDatabase, ModuleBase):
 
     def pull(self) -> dict:
         __logger = Log("Model.Module.Database.pull")
-        __logger.debug("Pulling module info from MongoDB")
+        __logger.debug(f"Pulling module info from MongoDB: {self.code}")
         filter = {}
         filter.update({"code": self.code})
         object = self.collection.find_one(filter)
@@ -41,13 +49,15 @@ class ModuleDatabase(BaseDatabase, ModuleBase):
         __logger.debug("Pushing module info to MongoDB")
         try:
             self.check()
-            self.update()
+            self.pull()
         except ValueError as e:
             match str(e):
-                case "Model.Module.Database.update:WriteError":
+                case "Model.Module.Database.pull:NotFound":
                     return self.register()
                 case _:
                     raise e
+        else:
+            self.update()
         return
 
     def register(self) -> None:

@@ -35,7 +35,7 @@ class AccountDatabase(BaseDatabase, AccountBase):
 
     def pull(self) -> dict:
         __logger = Log("Model.Account.Database.pull")
-        __logger.debug("Pulling data from MongoDB")
+        __logger.debug(f"Pulling data from MongoDB: {self.multi_id}")
         filter = {}
         match len(self.multi_id):
             case 7:

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from letusc.logger import Log
 from letusc.Model.BaseModel import BaseModel
@@ -22,7 +23,7 @@ class ContentBase(BaseModel):
     modules: list[str] = field(init=False)  # `module_type:module_id:module_hash`[]
 
     hash: str = field(init=False)
-    timestamp: str = field(init=False)
+    timestamp: datetime = field(init=False)
 
     def from_api(self, object: dict) -> None:
         try:
@@ -47,8 +48,8 @@ class ContentBase(BaseModel):
                 raise ValueError
             if not isinstance(hash, str):
                 raise ValueError
-            if not isinstance(timestamp, str):
-                raise ValueError
+            if not isinstance(timestamp, datetime):
+                timestamp = datetime.now()
         except Exception as e:
             raise ValueError("Model.Content.from_api:InvalidData") from e
         else:

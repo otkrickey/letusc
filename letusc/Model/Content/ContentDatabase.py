@@ -19,7 +19,7 @@ class ContentDatabase(BaseDatabase, ContentBase):
         __logger = Log("Model.Content.Database.check")
         __logger.debug("Checking content info")
         attributes = ["code", "title", "main", "modules", "hash", "timestamp"]
-        if any(hasattr(self, attribute) for attribute in attributes):
+        if any(not hasattr(self, attribute) for attribute in attributes):
             __logger.info("Attribute Error")
             raise ValueError("Model.Content.Database.check:AttributeError")
         __logger.info("Content is valid")
@@ -27,7 +27,7 @@ class ContentDatabase(BaseDatabase, ContentBase):
 
     def pull(self) -> dict:
         __logger = Log("Model.Content.Database.pull")
-        __logger.debug("Pulling content info from MongoDB")
+        __logger.debug(f"Pulling content info from MongoDB: {self.code}")
         filter = {}
         filter.update({"code": self.code})
         object = self.collection.find_one(filter)
@@ -41,13 +41,15 @@ class ContentDatabase(BaseDatabase, ContentBase):
         __logger.debug("Pushing content info to MongoDB")
         try:
             self.check()
-            self.update()
+            self.pull()
         except ValueError as e:
             match str(e):
-                case "Model.Content.Database.update:WriteError":
+                case "Model.Content.Database.pull:NotFound":
                     return self.register()
                 case _:
                     raise e
+        else:
+            self.update()
         return
 
     def register(self) -> None:

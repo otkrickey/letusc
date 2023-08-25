@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from letusc.logger import Log
 from letusc.Model.BaseModel import BaseModel
@@ -15,13 +16,15 @@ class PageBase(BaseModel):
     page_id: str = field(init=False)
     url: str = field(init=False)
 
-    accounts: list[str] = field(init=False)  # `multi_id`[]
+    # `multi_id`[]
+    accounts: list[str] = field(default_factory=list, init=False)
 
     title: str = field(init=False)
-    content: list[str] = field(init=False)  # `content_type:content_id:content_hash`[]
+    # `content_type:content_id:content_hash`[]
+    contents: list[str] = field(default_factory=list, init=False)
 
     hash: str = field(init=False)
-    timestamp: str = field(init=False)
+    timestamp: datetime = field(init=False)
 
     def from_api(self, object: dict) -> None:
         try:
@@ -40,16 +43,16 @@ class PageBase(BaseModel):
             title = object["title"]
             hash = object["hash"]
             timestamp = object["timestamp"]
-            content = object["content"]
+            contents = object["contents"]
             if not isinstance(title, str):
                 raise ValueError
             if not isinstance(hash, str):
                 raise ValueError
-            if not isinstance(timestamp, str):
+            if not isinstance(timestamp, datetime):
+                timestamp = datetime.now()
+            if not isinstance(contents, list):
                 raise ValueError
-            if not isinstance(content, list):
-                raise ValueError
-            if not all(isinstance(content, str) for content in content):
+            if not all(isinstance(content, str) for content in contents):
                 raise ValueError
         except Exception as e:
             raise ValueError("Model.Page.from_api:InvalidData") from e
@@ -59,7 +62,7 @@ class PageBase(BaseModel):
             self.page_id = code_split[2]
             self.url = URLManager.getPage(self.year, self.page_type, self.page_id)
             self.title = title
-            self.content = content
+            self.contents = contents
             self.hash = hash
             self.timestamp = timestamp
         return
@@ -69,7 +72,7 @@ class PageBase(BaseModel):
             "code": self.code,
             "accounts": self.accounts,
             "title": self.title,
-            "content": self.content,
+            "contents": self.contents,
             "hash": self.hash,
             "timestamp": self.timestamp,
         }
