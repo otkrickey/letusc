@@ -38,3 +38,6 @@ class Log:
         prefix = f"[{self.__s(44)}{self.__obj()}]"
         if self.enabled:
             print(f"[ \033[35mwarn\033[0m] {prefix} {message}")
+
+    def __str__(self) -> str:
+        return self.obj
