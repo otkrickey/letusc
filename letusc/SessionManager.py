@@ -6,10 +6,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
+import letusc.Model.letus as Letus
 from letusc.logger import Log
-from letusc.Model import Letus
-from letusc.Model.Account.AccountBase import AccountBase
-from letusc.util import auth_url, env, origin_url
+from letusc.Model.account import AccountBase
+from letusc.URLManager import URLManager
+from letusc.util import env
 
 
 class SessionAutomator:
@@ -32,12 +33,14 @@ class SessionAutomator:
         __logger = Log("Session.Automator.login_letus")
         __logger.debug("Login to letus (chrome)")
 
+        auth_url = URLManager.getAuth()
         self.driver.get(auth_url)
         entry_url = "https://idp.admin.tus.ac.jp/idp/profile/SAML2/Redirect/SSO"
         WebDriverWait(self.driver, 3).until(EC.url_contains(entry_url))
         self.driver.find_element(By.NAME, "_eventId_ChooseSam2").click()
         timeout = time.time() + 60
         while True:
+            origin_url = URLManager.getOrigin()
             if origin_url in self.driver.current_url:
                 __logger.debug("Letus Login Success")
                 break
@@ -66,6 +69,7 @@ class SessionAutomator:
     def login_ms(self):
         __logger = Log("Session.Automator.login_ms")
         __logger.debug("Login to Microsoft")
+        auth_url = URLManager.getAuth()
         self.driver.get(auth_url)
 
         # wait [idp.admin.tus.ac.jp]

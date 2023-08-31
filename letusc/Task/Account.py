@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from letusc.SessionManager import SessionManager
 
 from letusc.logger import Log
-from letusc.Model import Discord, Letus
-from letusc.Model.Account import Account
+import letusc.Model.letus as Letus
+import letusc.Model.discord as Discord
+from letusc.Model.account import Account
 
 from .BaseTask import BaseTask
 
@@ -59,7 +61,8 @@ class Login(AccountTask):
         )
 
     def run(self):
-        self.login()
+        session = SessionManager(self)
+        session.login()
         self.push()
 
 

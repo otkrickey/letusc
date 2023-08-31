@@ -6,10 +6,10 @@ import requests
 from bs4 import BeautifulSoup
 
 from letusc.logger import Log
-from letusc.Model.Account import Account
-from letusc.Model.Content import Content, NewContent
-from letusc.Model.Module import NewModule
-from letusc.Model.Page import NewPage, Page
+from letusc.Model.account import Account
+from letusc.Model.content import Content, NewContent
+from letusc.Model.module import Module, NewModule
+from letusc.Model.page import NewPage, Page
 
 
 class PageParser:
@@ -63,7 +63,8 @@ class PageParser:
             content_type = "section"
             content_id = content_el.attrs["data-id"]
             code = f"{self.page.code}:{content_type}:{content_id}"
-            content = NewContent(code)
+            # content = NewContent(code)
+            content = NewContent.from_code(code)
             content.parse(content_el)
             content_code_hash = f"{content_type}:{content_id}:{content.hash}"
             self.page.contents.append(content_code_hash)
@@ -129,7 +130,7 @@ class PageParser:
         self.__logger.info("Parsing page")
         self.response = response.text
 
-    def compare(self) -> list[dict[str, str]]:
+    def compare(self) -> list[dict]:
         if not self.page_old:
             self.__logger.info("No old page found")
             return []
@@ -137,22 +138,38 @@ class PageParser:
         nc_list = self.contents
         nm_list = self.modules
         oc_list = {}
+
+        # # NOTE:DEBUG
+        for inc, nc in enumerate(self.page.contents):
+            if "1081922" in nc:
+                self.page.contents[
+                    inc
+                ] = "section:1081922:changeddddddddddddddddddddddddddddd"
+            elif "1078139" in nc:
+                self.page.contents.pop(inc)
+        self.page.push()
+
         for oc in self.page_old.contents:
             key = ":".join(oc.split(":")[:2])
             value = oc.split(":")[-1]
             oc_list.update({key: value})
         for nc in nc_list.keys():
             if nc in oc_list.keys():
+                new_modules = []
+                changed_modules = []
                 if nc_list[nc].hash != oc_list[nc]:
-                    code = f"{self.page.code}:{nc}"
-                    # res.append({"code": code, "status": "changed"})
-                    res.append(
-                        {
-                            "status": "changed",
-                            "type": "content",
-                            "object": nc_list[nc],
-                        }
+                    self.__logger.debug(
+                        f"{nc_list[nc].code}: {oc_list[nc]} <-> {nc_list[nc].hash}"
                     )
+                    code = f"{self.page.code}:{nc}"
+                    content = {
+                        "code": code,
+                        "status": "changed",
+                        "type": "content",
+                        "new": nc_list[nc],
+                        "old": Content.from_code(code),
+                        "modules": [],
+                    }
                     oc = Content.from_code(nc_list[nc].code)
                     om_list = {}
                     for om in oc.modules:
@@ -161,128 +178,53 @@ class PageParser:
                         om_list.update({key: value})
                     for nm in nm_list.keys():
                         if nm in om_list.keys():
-                            self.__logger.debug(f"{nm_list[nm].code} <-> {om_list[nm]}")
                             if nm_list[nm].hash != om_list[nm]:
-                                code = f"{self.page.code}:{nc}:{nm}"
-                                # res.append({"code": code, "status": "changed"})
-                                res.append(
-                                    {
-                                        "status": "changed",
-                                        "type": "module",
-                                        "object": nm_list[nm],
-                                    }
+                                self.__logger.debug(
+                                    f"{nm_list[nm].code}: {om_list[nm]} <-> {nm_list[nm].hash}"
                                 )
-                        else:
-                            code = f"{self.page.code}:{nc}:{nm}"
-                            # res.append({"code": code, "status": "new"})
-                            res.append(
-                                {
-                                    "status": "new",
+                                code = f"{self.page.code}:{nc}:{nm}"
+                                module = {
+                                    "code": code,
+                                    "status": "changed",
                                     "type": "module",
-                                    "object": nm_list[nm],
+                                    "new": nm_list[nm],
+                                    "old": Module.from_code(code),
                                 }
-                            )
+                                changed_modules.append(module)
+                        elif nm_list[nm].content_id == nc_list[nc].content_id:
+                            code = f"{self.page.code}:{nc}:{nm}"
+                            module = {
+                                "code": code,
+                                "status": "new",
+                                "type": "module",
+                                "new": nm_list[nm],
+                                "old": None,
+                            }
+                            new_modules.append(module)
+                    content["modules"].extend(new_modules)
+                    content["modules"].extend(changed_modules)
+                    res.append(content)
             else:
                 code = f"{self.page.code}:{nc}"
-                # res.append({"code": code, "status": "new"})
-                res.append(
-                    {
-                        "status": "new",
-                        "type": "content",
-                        "object": nc_list[nc],
-                    }
-                )
+                content = {
+                    "code": code,
+                    "status": "new",
+                    "type": "content",
+                    "new": nc_list[nc],
+                    "old": None,
+                    "modules": [],
+                }
+                for nm in nm_list.keys():
+                    if nm_list[nm].content_id == nc_list[nc].content_id:
+                        code = f"{self.page.code}:{nc}:{nm}"
+                        module = {
+                            "code": code,
+                            "status": "new",
+                            "type": "module",
+                            "new": nm_list[nm],
+                            "old": None,
+                        }
+                        content["modules"].append(module)
+                res.append(content)
 
         return res
-
-
-def tag_filter(soup, additional_tags=None) -> str | None:
-    if not isinstance(soup, bs4.Tag):
-        return None
-    tags = [
-        "a",
-        "abbr",
-        "acronym",
-        "b",
-        "bdo",
-        "big",
-        "br",
-        "button",
-        "cite",
-        "code",
-        "dfn",
-        "em",
-        "i",
-        "img",
-        "input",
-        "kbd",
-        "label",
-        "map",
-        "object",
-        "q",
-        "samp",
-        "script",
-        "select",
-        "small",
-        "span",
-        "strong",
-        "sub",
-        "sup",
-        "textarea",
-        "time",
-        "tt",
-        "var",
-    ]
-    if additional_tags:
-        tags.extend(additional_tags)
-    for tag in tags:
-        for element in soup.find_all(tag):
-            element.unwrap()
-    soup = BeautifulSoup(str(soup), "html.parser")
-    return soup.get_text(separator="\n")
-
-
-def text_filter(text, hash=True, pretty=2, no_script=True):
-    if hash:
-        soup = BeautifulSoup(text, "html.parser")
-        for tag in soup.find_all():
-            remove_attrs = []
-            for attr in tag.attrs:
-                if re.search(
-                    r"\b([0-9a-fA-F]{14,32}|random[0-9a-fA-F]{14,32}+_group|single_button[0-9a-fA-F]{14,32})\b",
-                    str(tag[attr]),
-                ):
-                    remove_attrs.append(attr)
-            for attr in remove_attrs:
-                del tag[attr]
-        text = str(soup)
-    if pretty > 0:
-        text = text.lstrip().rstrip()
-        text = re.sub(r"\n+", "\n", text)
-    if pretty > 1:
-        text = re.sub(r"\n\s*", " ", text)
-    if no_script:
-        soup = BeautifulSoup(text, "html.parser")
-        for tag in soup.find_all("script"):
-            tag.decompose()
-        text = str(soup)
-    return text
-
-
-def hash(text):
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def compare_lists(li1: list[str], li2: list[str]) -> list[dict[str, str]]:
-    li1_split = [{":".join(s[:2]): s[-1]} for s in [c.split(":") for c in li1]]
-    li2_split = [{":".join(s[:2]): s[-1]} for s in [c.split(":") for c in li2]]
-    li2_keys = [li2_item.keys() for li2_item in li2_split]
-    res = []
-    for li1_item in li1_split:
-        if li1_item.keys() in li2_keys:
-            li2_item = li2_split[li2_keys.index(li1_item.keys())]
-            if li1_item[list(li1_item.keys())[0]] != li2_item[list(li2_item.keys())[0]]:
-                res.append({"id": list(li1_item.keys())[0], "status": "changed"})
-        else:
-            res.append({"id": list(li1_item.keys())[0], "status": "new"})
-    return res

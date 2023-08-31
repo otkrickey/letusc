@@ -1,12 +1,12 @@
-from os import path
-from .static import get_year, get_origin_url, get_auth_url, year_current
-
-
+from . import parser
+from .converter import get_split_converter, strs_converter
+from .diff import diff_texts
 from .dotenv import env
 
-__all__ = ["dotenv"]
-
-# year = get_year()
-year = env("YEAR")
-origin_url = get_origin_url(int(year))
-auth_url = get_auth_url(int(year))
+__all__ = [
+    "parser",
+    "get_split_converter",
+    "strs_converter",
+    "diff_texts",
+    "env",
+]

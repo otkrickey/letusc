@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from letusc.Model.Account import Account
+from letusc.Model.account import Account
 
 from letusc.logger import Log
 
