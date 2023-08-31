@@ -7,6 +7,8 @@ from letusc.util.dotenv import env_bool
 
 
 class TaskManager:
+    __logger = Log("TaskManager")
+
     def __init__(self):
         self.client = MongoClient(
             "mongodb+srv://otkrickey:Tm6Mp291LJwFIscK@letus.tcigkrt.mongodb.net/?retryWrites=true&w=majority"
@@ -16,7 +18,7 @@ class TaskManager:
         self.stop_flag = False
 
     def configure(self, watcher_config, worker_config) -> None:
-        __logger = Log("TaskManager.configure")
+        __logger = Log(f"{TaskManager.__logger}.configure")
         self.watchers = []
         self.workers = []
         self.watcher_config = watcher_config
@@ -38,7 +40,7 @@ class TaskManager:
             self.workers.append(__thread)
 
     def start(self):
-        __logger = Log("TaskManager.start")
+        __logger = Log(f"{TaskManager.__logger}.start")
         __logger.info("Starting watchers and workers")
         for watcher in self.watchers:
             watcher.start()
@@ -47,7 +49,7 @@ class TaskManager:
             worker.start()
 
     def watcher(self, collection_name, task_queue):
-        __logger = Log("TaskManager.watcher")
+        __logger = Log(f"{TaskManager.__logger}.watcher")
         pipeline = [
             {"$match": {"operationType": "insert"}},
             {"$project": {"fullDocument": 1}},
@@ -61,7 +63,7 @@ class TaskManager:
                 task_queue.put(change)
 
     def stop(self):
-        __logger = Log("TaskManager.stop")
+        __logger = Log(f"{TaskManager.__logger}.stop")
         __logger.info("Stopping watchers and workers")
         self.stop_flag = True
         self.client.close()

@@ -10,3 +10,6 @@ class BaseTask(Account):
     # [must]
     task: str
     multi_id: str
+
+    def run(self):
+        raise NotImplementedError(f"{BaseTask.__logger}.run:NotImplemented")

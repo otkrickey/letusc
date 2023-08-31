@@ -18,7 +18,7 @@ class BaseModel:
     def from_api(
         self, object: dict, attrs: list[tuple[str, type, Callable]] = []
     ) -> None:
-        __logger = Log(f"{self.__logger}.from_api")
+        __logger = Log(f"{BaseModel.__logger}.from_api")
         try:
             for attr_name, attr_type, converter in attrs:
                 converted_value = converter(object)
@@ -40,7 +40,7 @@ class BaseDatabase(BaseModel):
     def check(
         self, attrs: list[str] = [], types: list[tuple[str, str, type]] = []
     ) -> None:
-        __logger = Log(f"{self.__logger}.check")
+        __logger = Log(f"{BaseDatabase.__logger}.check")
         if any(not hasattr(self, attr) for attr in attrs):
             __logger.info("Attribute Error")
             raise ValueError(f"{__logger}:AttributeError")
@@ -52,7 +52,7 @@ class BaseDatabase(BaseModel):
         return
 
     def pull(self) -> dict:
-        __logger = Log(f"{self.__logger}.pull")
+        __logger = Log(f"{BaseDatabase.__logger}.pull")
         __logger.debug(f"Pull {self.key_name}={self.key}")
         filter = {}
         filter.update({self.key_name: self.key})
@@ -63,13 +63,13 @@ class BaseDatabase(BaseModel):
         return object
 
     def push(self) -> None:
-        __logger = Log(f"{self.__logger}.push")
+        __logger = Log(f"{BaseDatabase.__logger}.push")
         __logger.debug(f"Push {self.key_name}={self.key}")
         try:
             self.check()
             self.pull()
         except ValueError as e:
-            if str(e) == f"{self.__logger}.pull:NotFound":
+            if str(e) == f"{BaseDatabase.__logger}.pull:NotFound":
                 return self.register()
             raise e
         else:
@@ -77,7 +77,7 @@ class BaseDatabase(BaseModel):
         return
 
     def register(self) -> None:
-        __logger = Log(f"{self.__logger}.register")
+        __logger = Log(f"{BaseDatabase.__logger}.register")
         __logger.debug(f"Register {self.key_name}={self.key}")
         try:
             self.collection.insert_one(self.to_api())
@@ -86,7 +86,7 @@ class BaseDatabase(BaseModel):
         return
 
     def update(self) -> None:
-        __logger = Log(f"{self.__logger}.update")
+        __logger = Log(f"{BaseDatabase.__logger}.update")
         __logger.debug(f"Update {self.key_name}={self.key}")
         try:
             self.collection.update_one(

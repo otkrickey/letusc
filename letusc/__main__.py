@@ -4,7 +4,7 @@ from letusc import Worker
 from letusc.TaskManager import TaskManager
 from letusc.test import test
 from letusc.VPNManager import VPNController
-from letusc.util.dotenv import env, env_bool
+from letusc.util.dotenv import env_bool
 
 
 def main(TM: TaskManager):

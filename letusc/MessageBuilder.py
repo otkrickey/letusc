@@ -70,7 +70,7 @@ class MessageBuilder:
         }
 
     def send(self):
-        __logger = Log(f"{self.__logger}.send")
+        __logger = Log(f"{MessageBuilder.__logger}.send")
 
         payload = self.build()
         res = requests.post(

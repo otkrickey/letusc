@@ -29,10 +29,7 @@ class AccountTask(BaseTask):
             case "status":
                 return Status.from_copy(account)
             case _:
-                raise KeyError("Task.AccountTask.from_api:UnknownAction")
-
-    def run(self):
-        raise NotImplementedError("Task.AccountTask.run:NotImplemented")
+                raise KeyError(f"{AccountTask.__logger}.from_api:UnknownAction")
 
 
 @dataclass
@@ -48,9 +45,9 @@ class Login(AccountTask):
     @classmethod
     def from_copy(cls, account: Account):
         if not isinstance(account.Letus, Letus.LetusUserWithPassword):
-            raise ValueError("Task.AccountTask.Login.from_copy:PasswordError")
+            raise ValueError(f"{Login.__logger}.from_copy:PasswordError")
         if not isinstance(account.Discord, Discord.DiscordUser):
-            raise ValueError("Task.AccountTask.Login.from_copy:DiscordError")
+            raise ValueError(f"{Login.__logger}.from_copy:DiscordError")
         return Login(
             multi_id=account.multi_id,
             task="account:check",
@@ -79,9 +76,9 @@ class Status(AccountTask):  # NOTE: in development
     @classmethod
     def from_copy(cls, account: Account):
         if not isinstance(account.Letus, Letus.LetusUserWithCookies):
-            raise ValueError("Task.AccountTask.Status.from_copy:CookiesError")
+            raise ValueError(f"{Status.__logger}.from_copy:CookiesError")
         if not isinstance(account.Discord, Discord.DiscordUser):
-            raise ValueError("Task.AccountTask.Status.from_copy:DiscordError")
+            raise ValueError(f"{Status.__logger}.from_copy:DiscordError")
         return Status(
             multi_id=account.multi_id,
             task="account:status",
@@ -91,9 +88,8 @@ class Status(AccountTask):  # NOTE: in development
             Letus=account.Letus,
         )
 
-    # def run(self):
-    #     self.status()
-    #     self.push()
+    def run(self):
+        print("Not supported yet")
 
 
 __all__ = [

@@ -138,7 +138,7 @@ class NewContent(Content):
             if len(code_split) != 5:
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{self.__logger}:InvalidData") from e
+            raise ValueError(f"{NewContent.__logger}:InvalidData") from e
         else:
             self.year = code_split[0]
             self.page_type = code_split[1]

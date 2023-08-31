@@ -14,12 +14,14 @@ from letusc.util import env
 
 
 class SessionAutomator:
+    __logger = Log("Session.Automator")
+
     def __init__(self, account: AccountBase):
         self.CHROME_DRIVER_PATH = env("CHROME_DRIVER_PATH")
         self.account = account
 
     def register(self):
-        __logger = Log("Session.Automator.register")
+        __logger = Log(f"{SessionAutomator.__logger}.register")
         __logger.debug("Register to letus")
 
         self.service = Service(self.CHROME_DRIVER_PATH)
@@ -30,7 +32,7 @@ class SessionAutomator:
         self.load_cookie()
 
     def login_letus(self):
-        __logger = Log("Session.Automator.login_letus")
+        __logger = Log(f"{SessionAutomator.__logger}.login_letus")
         __logger.debug("Login to letus (chrome)")
 
         auth_url = URLManager.getAuth()
@@ -46,18 +48,20 @@ class SessionAutomator:
                 break
             elif time.time() > timeout:
                 __logger.error("Timeout while accessing Letus Login Page")
-                raise TimeoutError("Session.Automator.login_letus:Timeout")
+                raise TimeoutError(f"{__logger}:Timeout")
             elif "https://login.microsoftonline.com" in self.driver.current_url:
                 while True:
                     if time.time() > timeout:
                         __logger.error("Timeout while accessing Letus Login Page")
-                        raise TimeoutError("Session.Automator.login_letus:Timeout")
+                        raise TimeoutError(f"{__logger}:Timeout")
                     try:
                         self.login_ms()
                     except ValueError as e:
-                        match str(e):
-                            case "Session.Automator.login_ms:PasswordError":
-                                raise e
+                        if (
+                            str(e)
+                            == f"{SessionAutomator.__logger}.login_ms:PasswordError"
+                        ):
+                            raise e
                     except:
                         __logger.warn("Retrying...")
                         continue
@@ -67,7 +71,7 @@ class SessionAutomator:
                 continue
 
     def login_ms(self):
-        __logger = Log("Session.Automator.login_ms")
+        __logger = Log(f"{SessionAutomator.__logger}.login_ms")
         __logger.debug("Login to Microsoft")
         auth_url = URLManager.getAuth()
         self.driver.get(auth_url)
@@ -131,7 +135,7 @@ class SessionAutomator:
             __logger.debug("Password is Valid")
         else:
             __logger.error("Password Error")
-            raise ValueError("Session.Automator.login_ms:PasswordError")
+            raise ValueError(f"{__logger}:PasswordError")
 
         # wait [login.microsoftonline.com][DontShowAgain]
         __logger.debug("Wait for [login.microsoftonline.com][DontShowAgain]")
@@ -147,7 +151,7 @@ class SessionAutomator:
         __logger.info("Microsoft Login Success")
 
     def load_cookie(self):
-        __logger = Log("Session.Automator.load_cookie")
+        __logger = Log(f"{SessionAutomator.__logger}.load_cookie")
         cookies = self.driver.get_cookies()
         new_cookies = []
         for new_cookie in cookies:
@@ -174,8 +178,10 @@ class SessionAutomator:
 
 
 class SessionManager(SessionAutomator):
+    __logger = Log("Session.Manager")
+
     def login(self):
-        __logger = Log("SessionManager.login")
+        __logger = Log(f"{SessionManager.__logger}.login")
         __logger.debug("Login to letus")
         if isinstance(self.account.Letus, Letus.LetusUserWithCookies):
             for cookie in self.account.Letus.cookies:

@@ -8,8 +8,7 @@ from letusc.URLManager import URLManager
 
 from .base import BaseDatabase, BaseModel
 from .discord import DiscordUser, DiscordUserBase
-from .letus import (LetusUser, LetusUserBase, LetusUserWithCookies,
-                    LetusUserWithPassword)
+from .letus import LetusUser, LetusUserBase, LetusUserWithCookies, LetusUserWithPassword
 
 
 @dataclass
@@ -23,7 +22,7 @@ class AccountBase(BaseModel):
     Letus: LetusUserBase = field(init=False)
 
     def identify(self) -> None:
-        __logger = Log(f"{self.__logger}.identify")
+        __logger = Log(f"{AccountBase.__logger}.identify")
         match len(self.multi_id):
             case 7:
                 self.key_name = "student_id"
@@ -75,7 +74,7 @@ class AccountDatabase(BaseDatabase, AccountBase):
         try:
             super().push()
         except TypeError as e:
-            if str(e) == f"{self.__logger}.check:TypeError:Cookie":
+            if str(e) == f"{BaseDatabase.__logger}.check:TypeError:Cookie":
                 return self.register()
             raise e
 

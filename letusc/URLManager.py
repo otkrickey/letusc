@@ -33,7 +33,6 @@ class URLManager:
 
     @staticmethod
     def getPage(year: str, type: str, object_id: str):
-        __logger = Log("URLManager.getPage")
         prefix = URLManager.origin
         middle = f"/{year}" if year != "2023" else ""
         suffix = f"/{type}/view.php?id={object_id}"
@@ -41,7 +40,6 @@ class URLManager:
 
     @staticmethod
     def getPageByCode(page_code: str):
-        __logger = Log("URLManager.getPage")
         try:
             code_split = page_code.split(":")
             if len(code_split) != 3:
@@ -50,13 +48,12 @@ class URLManager:
             type = code_split[1]
             object_id = code_split[2]
         except Exception as e:
-            raise ValueError("URLManager.getPage:InvalidCode") from e
+            raise ValueError(f"{URLManager.__logger}.getPageByCode:InvalidCode") from e
         else:
             return URLManager.getPage(year, type, object_id)
 
     @staticmethod
     def getModule(year: str, type: str, object_id: str):
-        __logger = Log("URLManager.getModule")
         prefix = URLManager.origin
         middle = f"/{year}" if year != "2023" else ""
         suffix = f"/mod/{type}/view.php?id={object_id}"
@@ -64,7 +61,6 @@ class URLManager:
 
     @staticmethod
     def getModuleByCode(module_code: str):
-        __logger = Log("URLManager.getModule")
         try:
             code_split = module_code.split(":")
             if len(code_split) != 7:
@@ -73,6 +69,8 @@ class URLManager:
             type = code_split[5]
             object_id = code_split[6]
         except Exception as e:
-            raise ValueError("URLManager.getModule:InvalidCode") from e
+            raise ValueError(
+                f"{URLManager.__logger}.getModuleByCode:InvalidCode"
+            ) from e
         else:
             return URLManager.getModule(year, type, object_id)
