@@ -1,10 +1,10 @@
 import queue
 
 from letusc import Worker
-from letusc.taskManager import TaskManager
+from letusc.TaskManager import TaskManager
 from letusc.test import test
+from letusc.util import env_bool
 from letusc.VPNManager import VPNController
-from letusc.util.dotenv import env_bool
 
 
 def main(TM: TaskManager):

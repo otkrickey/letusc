@@ -1,5 +1,4 @@
 from letusc.logger import Log
-from letusc.MessageBuilder import MessageBuilder
 
 
 def test():
@@ -103,7 +102,7 @@ def test_content_task():
 def test_diff_texts():
     __logger = Log("test.test_diff_texts")
     __logger.info("test_diff_texts")
-    from letusc.util.diff import diff_texts
+    from letusc.util import diff_texts
 
     text1 = "EEの学生向け掲示板です（大学からの情報はCLASSで行われます）。"
     text2 = "EEの学生向け掲示板です（大学からの情報はCLASSで行われますので、CLASSも必ずご覧ください）。\n学科内の情報ですので、SNSなどでの拡散は禁止します。"
@@ -116,6 +115,7 @@ def test_diff_texts():
 def test_discord_webhook():
     __logger = Log("test.test_discord_webhook")
     __logger.info("test_discord_webhook")
+    from letusc.MessageBuilder import MessageBuilder
     from datetime import datetime
 
     THREAD_ID = 1145207293105942668

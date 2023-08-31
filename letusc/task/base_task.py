@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from letusc.model.account import Account
 
 from letusc.logger import Log
+from letusc.model.account import Account
 
 
 @dataclass

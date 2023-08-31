@@ -3,7 +3,7 @@ from threading import Thread
 from pymongo import MongoClient
 
 from letusc.logger import Log
-from letusc.util.dotenv import env_bool
+from letusc.util import env_bool
 
 
 class TaskManager:

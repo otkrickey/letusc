@@ -4,10 +4,10 @@ import re
 import bs4
 import requests
 from bs4 import BeautifulSoup
-from letusc.model.base import BaseDatabase
 
 from letusc.logger import Log
 from letusc.model.account import Account
+from letusc.model.base import BaseDatabase
 from letusc.model.content import Content, NewContent
 from letusc.model.module import Module, NewModule
 from letusc.model.page import NewPage, Page, PageDatabase
