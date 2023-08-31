@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 
 from letusc.logger import Log
-from letusc.Model.BaseModel import BaseModel
+
+from .base import BaseModel
 
 
 @dataclass

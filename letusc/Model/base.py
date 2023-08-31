@@ -1,10 +1,35 @@
 from dataclasses import dataclass, field
-from math import e
+from typing import Callable
 
 from pymongo.collection import Collection
 
 from letusc.logger import Log
-from letusc.Model.BaseModel import BaseModel
+
+
+@dataclass
+class BaseModel:
+    __logger = Log("Model.BaseModel")
+    # Add global methods here
+
+    def identify(self) -> None:
+        self.key = "key"  # default key
+        self.key_name = "key_name"  # default key_name
+
+    def from_api(
+        self, object: dict, attrs: list[tuple[str, type, Callable]] = []
+    ) -> None:
+        __logger = Log(f"{self.__logger}.from_api")
+        try:
+            for attr_name, attr_type, converter in attrs:
+                converted_value = converter(object)
+                if not isinstance(converted_value, attr_type):
+                    raise ValueError
+                setattr(self, attr_name, converted_value)
+        except Exception as e:
+            raise ValueError(f"{__logger}:InvalidData") from e
+
+    def to_api(self) -> dict:
+        raise NotImplementedError
 
 
 @dataclass
@@ -70,6 +95,3 @@ class BaseDatabase(BaseModel):
         except Exception as e:
             raise ValueError(f"{__logger}:DatabaseError") from e
         return
-
-    def login(self) -> None:
-        raise NotImplementedError("Model.BaseDatabase.login:NotImplementedError")

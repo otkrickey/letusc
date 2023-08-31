@@ -1,8 +1,8 @@
-from dataclasses import dataclass, field
-from typing import Callable
+from dataclasses import dataclass
 
 from letusc.logger import Log
-from letusc.Model.BaseModel import BaseModel
+
+from .base import BaseModel
 
 
 @dataclass
@@ -45,3 +45,10 @@ class DiscordUser(DiscordUserAny):
     __logger = Log("Model.DiscordUser")
     username: str
     discriminator: str
+
+
+__all__ = [
+    "DiscordUserBase",
+    "DiscordUserAny",
+    "DiscordUser",
+]

@@ -1,12 +1,15 @@
 from dataclasses import dataclass, field
 from typing import Callable
 
+from pymongo import MongoClient
+
 from letusc.logger import Log
-from letusc.Model.BaseModel import BaseModel
-from letusc.Model.Discord import DiscordUser
-from letusc.Model.Discord.DiscordUser import DiscordUserBase
-from letusc.Model.Letus import LetusUser
-from letusc.Model.Letus.LetusUser import LetusUserBase
+from letusc.URLManager import URLManager
+
+from .base import BaseDatabase, BaseModel
+from .discord import DiscordUser, DiscordUserBase
+from .letus import (LetusUser, LetusUserBase, LetusUserWithCookies,
+                    LetusUserWithPassword)
 
 
 @dataclass
@@ -51,6 +54,44 @@ class AccountBase(BaseModel):
         }
 
 
+@dataclass
+class AccountDatabase(BaseDatabase, AccountBase):
+    __logger = Log("Model.Account.Database")
+    collection = MongoClient(URLManager.getMongo())["letus"]["accountsV2"]
+
+    def check(
+        self, attrs: list[str] = [], types: list[tuple[str, str, type]] = []
+    ) -> None:
+        attrs[:0] = ["multi_id", "student_id", "discord_id", "Letus", "Discord"]
+        types[:0] = [
+            ("StudentID", "student_id", str),
+            ("DiscordID", "discord_id", str),
+            ("Cookie", "Letus", LetusUserWithCookies),
+            ("Password", "Letus", LetusUserWithPassword),
+        ]
+        super().check(attrs=attrs, types=types)
+
+    def push(self) -> None:
+        try:
+            super().push()
+        except TypeError as e:
+            if str(e) == f"{self.__logger}.check:TypeError:Cookie":
+                return self.register()
+            raise e
+
+
+@dataclass
+class Account(AccountDatabase, AccountBase):
+    __logger = Log("Model.Account")
+
+    def __post_init__(self):
+        self.identify()
+        object = self.pull()
+        self.from_api(object)
+
+
 __all__ = [
     "AccountBase",
+    "AccountDatabase",
+    "Account",
 ]

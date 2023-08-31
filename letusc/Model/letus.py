@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 
 from letusc.logger import Log
-from letusc.Model.BaseModel import BaseModel
 from letusc.util import env
 
-from .Cookie import Cookie
+from .base import BaseModel
+from .cookie import Cookie
 
 
 @dataclass
@@ -71,3 +71,11 @@ class LetusUserWithPassword(LetusUser):
 class LetusUserWithCookies(LetusUserWithPassword):
     __logger = Log("Model.LetusUserWithCookies")
     cookies: list["Cookie"]
+
+
+__all__ = [
+    "LetusUserBase",
+    "LetusUser",
+    "LetusUserWithPassword",
+    "LetusUserWithCookies",
+]
