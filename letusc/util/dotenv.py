@@ -10,3 +10,20 @@ def env(key: str) -> str:
     if not isinstance(val, str):
         raise ValueError(f"env {key} is not set")
     return val
+
+
+def env_bool(key: str) -> bool:
+    try:
+        res = env(key)
+    except ValueError:
+        return False
+    true_list = ["1", "True", "true", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "YES"]
+    if res in true_list:
+        return True
+    return False
+
+
+__all__ = [
+    "env",
+    "env_bool",
+]

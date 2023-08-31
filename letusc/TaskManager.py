@@ -3,6 +3,7 @@ from threading import Thread
 from pymongo import MongoClient
 
 from letusc.logger import Log
+from letusc.util.dotenv import env_bool
 
 
 class TaskManager:
@@ -10,7 +11,8 @@ class TaskManager:
         self.client = MongoClient(
             "mongodb+srv://otkrickey:Tm6Mp291LJwFIscK@letus.tcigkrt.mongodb.net/?retryWrites=true&w=majority"
         )
-        self.db = self.client["task"]
+        db_name = "task_test" if env_bool("TEST") else "task"
+        self.db = self.client[db_name]
         self.stop_flag = False
 
     def configure(self, watcher_config, worker_config) -> None:
