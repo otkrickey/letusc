@@ -1,6 +1,7 @@
 import queue
 
-from letusc import Worker
+
+import letusc.worker as Worker
 from letusc.TaskManager import TaskManager
 from letusc.test import test
 from letusc.util import env_bool
@@ -24,8 +25,8 @@ def main(TM: TaskManager):
     ]
     worker_config = [
         # {w: worker function, q: task queue}
-        {"w": Worker.Account, "q": AccountTaskQueue},
-        {"w": Worker.Content, "q": ContentTaskQueue},
+        {"w": Worker.account_worker, "q": AccountTaskQueue},
+        {"w": Worker.content_worker, "q": ContentTaskQueue},
     ]
     TM.configure(watcher_config, worker_config)
     TM.start()
