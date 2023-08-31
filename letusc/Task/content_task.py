@@ -7,7 +7,7 @@ from letusc.Model.content import Content
 from letusc.Model.module import Module
 from letusc.PageParser import PageParser
 
-from .BaseTask import BaseTask
+from .base_task import BaseTask
 
 
 @dataclass

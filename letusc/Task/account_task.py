@@ -6,7 +6,7 @@ import letusc.Model.letus as Letus
 import letusc.Model.discord as Discord
 from letusc.Model.account import Account
 
-from .BaseTask import BaseTask
+from .base_task import BaseTask
 
 
 @dataclass
