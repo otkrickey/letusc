@@ -1,4 +1,5 @@
 from letusc.logger import Log
+from letusc.Task.Content import ContentTask
 
 
 def Content(queue):
@@ -10,7 +11,9 @@ def Content(queue):
         if change is None:  # kill signal
             break
 
-        # do something with change
-        __logger.info(f"ContentWorker: {change}")
+        task = change["fullDocument"]
+        content_task = ContentTask.from_api(task)
+        content_task.run()
 
+        # end the task
         queue.task_done()
