@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Callable
 
 from letusc.logger import Log
 from letusc.Model.BaseModel import BaseModel
 from letusc.URLManager import URLManager
+from letusc.util import get_split_converter, strs_converter
 
 
 @dataclass
@@ -25,45 +27,29 @@ class ContentBase(BaseModel):
     hash: str = field(init=False)
     timestamp: datetime = field(init=False)
 
-    def from_api(self, object: dict) -> None:
-        try:
-            code = object["code"]
-            if not isinstance(code, str):
-                raise ValueError
-            code_split = code.split(":")
-            if len(code_split) != 5:
-                raise ValueError
-            title = object["title"]
-            main = object["main"]
-            modules = object["modules"]
-            hash = object["hash"]
-            timestamp = object["timestamp"]
-            if not isinstance(title, str):
-                raise ValueError
-            if not isinstance(main, str):
-                raise ValueError
-            if not isinstance(modules, list):
-                raise ValueError
-            if not all(isinstance(module, str) for module in modules):
-                raise ValueError
-            if not isinstance(hash, str):
-                raise ValueError
-            if not isinstance(timestamp, datetime):
-                timestamp = datetime.now()
-        except Exception as e:
-            raise ValueError("Model.Content.from_api:InvalidData") from e
-        else:
-            self.year = code_split[0]
-            self.page_type = code_split[1]
-            self.page_id = code_split[2]
-            self.content_type = code_split[3]
-            self.content_id = code_split[4]
-            self.url = URLManager.getPage(self.year, self.page_type, self.page_id)
-            self.title = title
-            self.main = main
-            self.modules = modules
-            self.hash = hash
-            self.timestamp = timestamp
+    def identify(self) -> None:
+        self.key_name = "code"
+        self.key = self.code
+
+    def from_api(
+        self, object: dict, attrs: list[tuple[str, type, Callable]] = []
+    ) -> None:
+        single, multi, clear = get_split_converter(self.code, 5)
+        attrs[:0] = [
+            ("year", str, lambda obj: single(obj["code"], 0)),
+            ("page_type", str, lambda obj: single(obj["code"], 1)),
+            ("page_id", str, lambda obj: single(obj["code"], 2)),
+            ("content_type", str, lambda obj: single(obj["code"], 3)),
+            ("content_id", str, lambda obj: single(obj["code"], 4)),
+            ("url", str, lambda obj: URLManager.getPage(*multi(obj["code"], 0, 1, 2))),
+            ("title", str, lambda obj: obj["title"]),
+            ("main", str, lambda obj: obj["main"]),
+            ("modules", list, lambda obj: strs_converter(obj["modules"])),
+            ("hash", str, lambda obj: obj["hash"]),
+            ("timestamp", datetime, lambda obj: obj["timestamp"]),
+        ]
+        super().from_api(object, attrs=attrs)
+        clear(self.code)
         return
 
     def to_api(self) -> dict:

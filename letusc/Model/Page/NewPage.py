@@ -4,7 +4,7 @@ from datetime import datetime
 import bs4
 from bs4 import BeautifulSoup
 
-import letusc.PageParser as parser
+import letusc.util.parser as parser
 from letusc.logger import Log
 from letusc.URLManager import URLManager
 
@@ -16,6 +16,7 @@ class NewPage(Page):
     __logger = Log("Model.Page.NewPage")
 
     def __post_init__(self):
+        self.identify()
         try:
             code_split = self.code.split(":")
             if len(code_split) != 3:
@@ -45,26 +46,6 @@ class NewPage(Page):
                     return NewCoursePage(code)
                 case _:
                     raise ValueError("Model.Page.from_api:UnknownType")
-
-    def bind(self, object: dict):
-        __logger = Log("Model.Page.bind")
-        if "code" in object and isinstance(object["code"], str):
-            self.code = object["code"]
-        elif (
-            "accounts" in object
-            and isinstance(object["accounts"], list)
-            and all(isinstance(account, str) for account in object["accounts"])
-        ):
-            self.accounts = object["accounts"]
-        elif "title" in object and isinstance(object["title"], str):
-            self.title = object["title"]
-        elif "hash" in object and isinstance(object["hash"], str):
-            self.hash = object["hash"]
-        elif "timestamp" in object and isinstance(object["timestamp"], datetime):
-            self.timestamp = object["timestamp"]
-        else:
-            __logger.error(f"InvalidData: {object}")
-            raise ValueError("Model.Page.bind:InvalidData")
 
     def parse(self, soup: BeautifulSoup):
         title_el = soup.find(attrs={"class": "page-header-headings"})

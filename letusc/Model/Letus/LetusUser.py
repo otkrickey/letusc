@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional, Union
 
 from letusc.logger import Log
 from letusc.Model.BaseModel import BaseModel
@@ -12,17 +11,15 @@ from .Cookie import Cookie
 class LetusUserBase(BaseModel):
     __logger = Log("Model.LetusUserBase")
     student_id: str
-    encrypted_password: Optional[str] = None
+    encrypted_password: str | None = None
     email: str = field(init=False)
-    cookies: Optional[list["Cookie"]] = None
+    cookies: list["Cookie"] | None = None
 
     def __post_init__(self):
         self.email = f"{self.student_id}@{env('TUS_EMAIL_HOST')}"
 
     @classmethod
-    def from_api(
-        cls, object: dict
-    ) -> Union["LetusUser", "LetusUserWithPassword", "LetusUserWithCookies"]:
+    def from_api(cls, object: dict) -> "LetusUserBase":
         try:
             student_id = object["student_id"]
         except KeyError as e:

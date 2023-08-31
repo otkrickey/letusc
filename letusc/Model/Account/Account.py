@@ -11,6 +11,7 @@ class Account(AccountDatabase, AccountBase):
     __logger = Log("Model.Account")
 
     def __post_init__(self):
+        self.identify()
         object = self.pull()
         self.from_api(object)
 

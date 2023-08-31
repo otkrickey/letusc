@@ -11,23 +11,25 @@ class Page(PageDatabase, PageBase):
     __logger = Log("Model.Page")
 
     def ___post_init___(self):
+        self.identify()
         object = self.pull()
         self.from_api(object)
 
     @classmethod
     def from_code(cls, code: str) -> "Page":
+        __logger = Log(f"{cls.__logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 3:
                 raise ValueError
         except Exception as e:
-            raise ValueError("Model.Page.from_api:InvalidData") from e
+            raise ValueError(f"{__logger}:InvalidData") from e
         else:
             match code_split[1]:
                 case "course":
                     return CoursePage(code)
                 case _:
-                    raise ValueError("Model.Page.from_api:UnknownType")
+                    raise ValueError(f"{__logger}:UnknownType")
 
 
 @dataclass

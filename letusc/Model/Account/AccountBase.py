@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Callable
 
 from letusc.logger import Log
 from letusc.Model.BaseModel import BaseModel
@@ -18,27 +19,28 @@ class AccountBase(BaseModel):
     Discord: DiscordUserBase = field(init=False)
     Letus: LetusUserBase = field(init=False)
 
-    def from_api(self, object: dict) -> None:
-        try:
-            student_id = object["student_id"]
-            discord_id = object["discord_id"]
-            Letus = LetusUser.from_api(object)
-            Discord = DiscordUser.from_api(object)
-            if not isinstance(student_id, str):
-                raise ValueError
-            if not isinstance(discord_id, str):
-                raise ValueError
-            if not isinstance(Letus, LetusUser):
-                raise ValueError
-            if not isinstance(Discord, DiscordUser):
-                raise ValueError
-        except Exception as e:
-            raise ValueError("Model.Account.from_api:InvalidData") from e
-        else:
-            self.student_id = student_id
-            self.discord_id = discord_id
-            self.Letus = Letus
-            self.Discord = Discord
+    def identify(self) -> None:
+        __logger = Log(f"{self.__logger}.identify")
+        match len(self.multi_id):
+            case 7:
+                self.key_name = "student_id"
+                self.key = self.multi_id
+            case 18:
+                self.key_name = "discord_id"
+                self.key = self.multi_id
+            case _:
+                raise ValueError(f"{__logger}:InvalidMultiID")
+
+    def from_api(
+        self, object: dict, attrs: list[tuple[str, type, Callable]] = []
+    ) -> None:
+        attrs[:0] = [
+            ("student_id", str, lambda obj: obj["student_id"]),
+            ("discord_id", str, lambda obj: obj["discord_id"]),
+            ("Letus", LetusUser, lambda obj: LetusUser.from_api(obj)),
+            ("Discord", DiscordUser, lambda obj: DiscordUser.from_api(obj)),
+        ]
+        super().from_api(object, attrs=attrs)
 
     def to_api(self) -> dict:
         return {

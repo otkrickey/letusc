@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional, Union
+from dataclasses import dataclass, field
+from typing import Callable
 
 from letusc.logger import Log
 from letusc.Model.BaseModel import BaseModel
@@ -9,11 +9,12 @@ from letusc.Model.BaseModel import BaseModel
 class DiscordUserBase(BaseModel):
     __logger = Log("Model.DiscordUserBase")
     discord_id: str
-    username: Optional[str] = None
-    discriminator: Optional[str] = None
+
+    username: str | None = None
+    discriminator: str | None = None
 
     @classmethod
-    def from_api(cls, object: dict) -> Union["DiscordUser", "DiscordUserAny"]:
+    def from_api(cls, object: dict) -> "DiscordUserBase":
         try:
             discord_id = object["discord_id"]
         except KeyError as e:
@@ -28,7 +29,10 @@ class DiscordUserBase(BaseModel):
                 return DiscordUser(discord_id, username, discriminator)
 
     def to_api(self) -> dict:
-        return {"username": self.username, "discriminator": self.discriminator}
+        return {
+            "username": self.username,
+            "discriminator": self.discriminator,
+        }
 
 
 @dataclass
