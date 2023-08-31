@@ -4,13 +4,13 @@ from letusc.util import env
 
 class URLManager:
     __logger = Log("URLManager")
-    current_year = "2021"
-    origin = "https://letus.ed.tus.ac.jp"
-    icon = "https://w7.pngwing.com/pngs/467/471/png-transparent-moodle-computer-icons-learning-management-system-content-management-system-others-miscellaneous-angle-text-thumbnail.png"
-    thumbnail = "https://letus.ed.tus.ac.jp/theme/image.php/classic/core/1692602222/moodlelogo_grayhat"
-    github = "https://github.com/ee-tus/letusc"
-    discord_webhook = "https://discord.com/api/webhooks/1145189748705607810/hmMOtp0-Ym_qNvXnFYgq3lZy5rsDwkDugn8RPun3Re8VvcBgmeVP36Y2qEy2qJYGskcs"
-    discord_webhook_general = "https://discord.com/api/webhooks/1146311468241920023/7YYWXjE-hezqHeXV0Ev3W-Yuqf4an5uyRQf6pIhMmmuHi7VZrlvcF87LiovloA6iIEJ6"
+    current_year = "2023"
+    origin = env("URL_ORIGIN")
+    icon = env("URL_ICON")
+    thumbnail = env("URL_THUMBNAIL")
+    github = env("URL_GITHUB")
+    discord_webhook = env("URL_DISCORD_WEBHOOK_NOTIFY")
+    discord_webhook_general = env("URL_DISCORD_WEBHOOK_GENERAL")
 
     @staticmethod
     def getMongo():
@@ -22,7 +22,7 @@ class URLManager:
     @staticmethod
     def getOrigin(year=current_year, omit_year=True):
         prefix = URLManager.origin
-        if year != "2023" or not omit_year:
+        if year != URLManager.current_year or not omit_year:
             prefix += f"/{year}"
         return prefix
 
