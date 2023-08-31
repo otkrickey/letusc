@@ -87,7 +87,7 @@ def test_parser():
 
 
 def test_content_task():
-    from letusc.Task.content_task import ContentTask
+    from letusc.task.content_task import ContentTask
 
     task = ContentTask.from_api(
         {
