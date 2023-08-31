@@ -18,7 +18,7 @@ def test():
 def test_account():
     __logger = Log("test.test_account")
     __logger.info("test_account")
-    from letusc.Model.account import Account
+    from letusc.model.account import Account
 
     account = Account("7322023")
     __logger.debug(account.__dict__)
@@ -28,7 +28,7 @@ def test_account():
 def test_pages():
     __logger = Log("test.test_pages")
     __logger.info("test_pages")
-    from letusc.Model.page import Page
+    from letusc.model.page import Page
 
     page = Page.from_code("2023:course:126936")
     __logger.debug(page.__dict__)
@@ -39,7 +39,7 @@ def test_pages():
 def test_content():
     __logger = Log("test.test_content")
     __logger.info("test_content")
-    from letusc.Model.content import Content
+    from letusc.model.content import Content
 
     content1 = Content.from_code("2023:course:126936:section:1078135")
     __logger.debug(content1.__dict__)
@@ -56,7 +56,7 @@ def test_content():
 def test_module():
     __logger = Log("test.test_module")
     __logger.info("test_module")
-    from letusc.Model.module import Module
+    from letusc.model.module import Module
 
     module1 = Module.from_code("2023:course:126936:section:1081922:label:1277831")
     __logger.debug(module1.__dict__)
@@ -73,7 +73,7 @@ def test_module():
 def test_parser():
     __logger = Log("test.test_parser")
     __logger.info("test_parser")
-    from letusc.Model.account import Account
+    from letusc.model.account import Account
     from letusc.PageParser import PageParser
 
     account = Account("7322023")

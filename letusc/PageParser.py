@@ -4,13 +4,13 @@ import re
 import bs4
 import requests
 from bs4 import BeautifulSoup
-from letusc.Model.base import BaseDatabase
+from letusc.model.base import BaseDatabase
 
 from letusc.logger import Log
-from letusc.Model.account import Account
-from letusc.Model.content import Content, NewContent
-from letusc.Model.module import Module, NewModule
-from letusc.Model.page import NewPage, Page, PageDatabase
+from letusc.model.account import Account
+from letusc.model.content import Content, NewContent
+from letusc.model.module import Module, NewModule
+from letusc.model.page import NewPage, Page, PageDatabase
 
 
 class PageParser:

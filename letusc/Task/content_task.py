@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from letusc.logger import Log
 from letusc.MessageBuilder import MessageBuilder
-from letusc.Model.account import Account
-from letusc.Model.content import Content
-from letusc.Model.module import Module
+from letusc.model.account import Account
+from letusc.model.content import Content
+from letusc.model.module import Module
 from letusc.PageParser import PageParser
 
 from .base_task import BaseTask

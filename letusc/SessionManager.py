@@ -6,9 +6,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-import letusc.Model.letus as Letus
+import letusc.model.letus as Letus
 from letusc.logger import Log
-from letusc.Model.account import AccountBase
+from letusc.model.account import AccountBase
 from letusc.URLManager import URLManager
 from letusc.util import env
 
