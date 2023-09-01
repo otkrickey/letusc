@@ -7,6 +7,7 @@ from letusc.util import env
 
 
 class VPNManager:
+    __logger = Log("VPNManager")
     _is_backed_up = False
     _is_installed = False
     _is_connected = False
@@ -34,7 +35,7 @@ class VPNManager:
 
     @staticmethod
     def backup_dns():
-        __logger = Log("VPNManager.backup_dns")
+        __logger = Log(f"{VPNManager.__logger}.backup_dns")
         __logger_cp = Log("cp.backup_dns", True)
         __logger.info("Backing up DNS settings")
         src = "/etc/resolv.conf"
@@ -59,7 +60,7 @@ class VPNManager:
 
     @staticmethod
     def fix_dns():
-        __logger = Log("VPNManager.fix_dns")
+        __logger = Log(f"{VPNManager.__logger}.fix_dns")
         __logger_cp = Log("cp.fix_dns", True)
         __logger.info("Fixing DNS settings")
         src = "/mnt/c/Users/rtkfi/dev/settings/resolv.conf"
@@ -84,7 +85,7 @@ class VPNManager:
             __logger.warn("Cannot fix DNS settings, need to reboot")
 
     def unzip(self):
-        __logger = Log("VPNManager.unzip")
+        __logger = Log(f"{VPNManager.__logger}.unzip")
         __logger_Tar = Log("Tar.unzip", self.show_cli_log)
         __logger.info("Unzipping Cisco VPN client")
         command_unzip = [
@@ -109,7 +110,7 @@ class VPNManager:
         process_unzip.wait()
 
     def install(self):
-        __logger = Log("VPNManager.install")
+        __logger = Log(f"{VPNManager.__logger}.install")
         __logger_VPN = Log("CiscoVPN.install", self.show_cli_log)
         self.unzip()
         __logger.info("Installing Cisco VPN client")
@@ -135,7 +136,7 @@ class VPNManager:
 
     @staticmethod
     def uninstall():
-        __logger = Log("VPNManager.uninstall")
+        __logger = Log(f"{VPNManager.__logger}.uninstall")
         __logger_rm = Log("rm.uninstall", True)
         __logger.info("Uninstalling Cisco VPN client")
         cli_path = "/opt/cisco/"
@@ -158,7 +159,7 @@ class VPNManager:
             __logger.warn("Cisco VPN client not found")
 
     def connect(self):
-        __logger = Log("VPNManager.connect")
+        __logger = Log(f"{VPNManager.__logger}.connect")
         __logger_VPN = Log("CiscoVPN.connect", self.show_cli_log)
         __logger.info("Connecting to VPN")
         connected = False
@@ -210,7 +211,7 @@ class VPNManager:
             __logger.warn("Failed to connect to VPN")
 
     def disconnect(self):
-        __logger = Log("VPNManager.disconnect")
+        __logger = Log(f"{VPNManager.__logger}.disconnect")
         __logger_VPN = Log("CiscoVPN.disconnect", self.show_cli_log)
         __logger.info("Disconnecting from VPN")
         command_disconnect = [
@@ -234,7 +235,7 @@ class VPNManager:
         __logger.info("Disconnected from VPN")
 
     def status(self):
-        __logger = Log("VPNManager.status")
+        __logger = Log(f"{VPNManager.__logger}.status")
         __logger_VPN = Log("CiscoVPN.status", self.show_cli_log)
         __logger.info("Checking VPN status")
         is_connected = False

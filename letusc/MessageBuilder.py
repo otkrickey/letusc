@@ -5,13 +5,14 @@ import requests
 
 from letusc.logger import Log
 from letusc.URLManager import URLManager
+from letusc.util import env
 
 
 class MessageBuilder:
     __logger = Log("MessageBuilder")
 
     def __init__(self, content: str = "", thread_id: str | None = None):
-        self.username = "letusc"
+        self.username = env("BOT_DISCORD_USERNAME")
         self.avatar_url = URLManager.icon
         self.content = content
         self.webhook_url = f"{URLManager.discord_webhook}?wait=true"
@@ -19,7 +20,7 @@ class MessageBuilder:
             self.webhook_url = f"{self.webhook_url}&thread_id={thread_id}"
 
         self.author = {
-            "name": "otkrickey@letusc",
+            "name": env("BOT_DISCORD_AUTHOR_NAME"),
             "url": URLManager.github,
             "icon_url": URLManager.icon,
         }
@@ -69,7 +70,7 @@ class MessageBuilder:
         }
 
     def send(self):
-        __logger = Log(f"{self.__logger}.send")
+        __logger = Log(f"{MessageBuilder.__logger}.send")
 
         payload = self.build()
         res = requests.post(

@@ -4,11 +4,16 @@ from letusc import Worker
 from letusc.TaskManager import TaskManager
 from letusc.test import test
 from letusc.VPNManager import VPNController
+from letusc.util.dotenv import env_bool
 
 
 def main(TM: TaskManager):
-    VC = VPNController()
-    VC.connect()
+    is_test = env_bool("TEST")
+    if is_test:
+        test()
+    else:
+        VC = VPNController()
+        VC.connect()
 
     AccountTaskQueue = queue.Queue()
     ContentTaskQueue = queue.Queue()
@@ -29,7 +34,6 @@ def main(TM: TaskManager):
 if __name__ == "__main__":
     TM = TaskManager()
     try:
-        test()
         main(TM)
         while True:
             pass

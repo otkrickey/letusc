@@ -142,7 +142,7 @@ class LabelModule(Module):
             if not isinstance(main, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{self.__logger}:InvalidData") from e
+            raise ValueError(f"{LabelModule.__logger}:InvalidData") from e
         self.from_api(object)
 
 
@@ -164,7 +164,7 @@ class PageModule(Module):
             if not isinstance(module_url, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{self.__logger}:InvalidData") from e
+            raise ValueError(f"{PageModule.__logger}:InvalidData") from e
         self.from_api(object)
 
 
@@ -186,7 +186,7 @@ class URLModule(Module):
             if not isinstance(module_url, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{self.__logger}:InvalidData") from e
+            raise ValueError(f"{URLModule.__logger}:InvalidData") from e
         self.from_api(object)
 
 
@@ -212,7 +212,7 @@ class ResourceModule(Module):
             if not isinstance(uploaded_at, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{self.__logger}:InvalidData") from e
+            raise ValueError(f"{ResourceModule.__logger}:InvalidData") from e
         self.from_api(object)
 
 
@@ -230,7 +230,7 @@ class FolderModule(Module):
             if not isinstance(title, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{self.__logger}:InvalidData") from e
+            raise ValueError(f"{FolderModule.__logger}:InvalidData") from e
         self.from_api(object)
 
 
@@ -256,7 +256,7 @@ class FeedbackModule(Module):
             # if not isinstance(uploaded_at, str):
             #     raise ValueError
         except Exception as e:
-            raise ValueError(f"{self.__logger}:InvalidData") from e
+            raise ValueError(f"{FeedbackModule.__logger}:InvalidData") from e
         self.from_api(object)
 
 

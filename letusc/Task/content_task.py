@@ -7,7 +7,7 @@ from letusc.Model.content import Content
 from letusc.Model.module import Module
 from letusc.PageParser import PageParser
 
-from .BaseTask import BaseTask
+from .base_task import BaseTask
 
 
 @dataclass
@@ -31,15 +31,12 @@ class ContentTask(BaseTask):
             case "fetch":
                 return FetchContent.from_copy(account, parser)
             case _:
-                raise KeyError("Task.AccountTask.from_api:UnknownAction")
-
-    def run(self):
-        raise NotImplementedError("Task.AccountTask.run:NotImplemented")
+                raise KeyError(f"{ContentTask.__logger}.from_api:UnknownAction")
 
 
 @dataclass
 class FetchContent(ContentTask):
-    __logger = Log("Task.ContentTask.FetchContent")
+    __logger = Log("Task.ContentTask.Fetch")
 
     student_id: str
     discord_id: str
@@ -56,7 +53,7 @@ class FetchContent(ContentTask):
         )
 
     def run(self):
-        __logger = Log("Task.ContentTask.FetchContent.run")
+        __logger = Log(f"{FetchContent.__logger}.run")
         self.parser.parse()
         contents = self.parser.compare()
         if len(contents) == 0:

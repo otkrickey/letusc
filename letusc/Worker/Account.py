@@ -1,5 +1,5 @@
 from letusc.logger import Log
-from letusc.Task.Account import AccountTask
+from letusc.Task.account_task import AccountTask
 
 
 def Account(queue):
