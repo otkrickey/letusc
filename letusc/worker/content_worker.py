@@ -1,5 +1,5 @@
 from letusc.logger import Log
-from letusc.Task.content_task import ContentTask
+from letusc.task.content_task import ContentTask
 
 
 def Content(queue):

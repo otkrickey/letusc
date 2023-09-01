@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from letusc.SessionManager import SessionManager
 
+import letusc.model.discord as Discord
+import letusc.model.letus as Letus
 from letusc.logger import Log
-import letusc.Model.letus as Letus
-import letusc.Model.discord as Discord
-from letusc.Model.account import Account
+from letusc.model.account import Account
+from letusc.SessionManager import SessionManager
 
 from .base_task import BaseTask
 
