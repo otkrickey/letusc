@@ -14,7 +14,7 @@ from .base import BaseDatabase, BaseModel
 
 @dataclass
 class ContentBase(BaseModel):
-    __logger = Log("Model.ContentBase")
+    _logger = Log("Model.ContentBase")
     code: str  # `year:page_type:page_id:content_type:content_id`
 
     year: str = field(init=False)
@@ -69,7 +69,7 @@ class ContentBase(BaseModel):
 
 @dataclass
 class ContentDatabase(BaseDatabase, ContentBase):
-    __logger = Log("Model.Content.Database")
+    _logger = Log("Model.Content.Database")
     collection = MongoClient(URLManager.getMongo())["letus"]["contents"]
 
     def check(
@@ -89,7 +89,7 @@ class ContentDatabase(BaseDatabase, ContentBase):
 
 @dataclass
 class Content(ContentDatabase, ContentBase):
-    __logger = Log("Model.Content")
+    _logger = Log("Model.Content")
 
     def ___post_init___(self):
         self.identify()
@@ -98,24 +98,24 @@ class Content(ContentDatabase, ContentBase):
 
     @classmethod
     def from_code(cls, code: str) -> "SectionContent":
-        __logger = Log(f"{cls.__logger}.from_code")
+        _logger = Log(f"{cls._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 5:
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{__logger}:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
         else:
             match code_split[3]:
                 case "section":
                     return SectionContent(code)
                 case _:
-                    raise ValueError(f"{__logger}:UnknownType")
+                    raise ValueError(f"{_logger}:UnknownType")
 
 
 @dataclass
 class SectionContent(Content):
-    __logger = Log("Model.Content.SectionContent")
+    _logger = Log("Model.Content.SectionContent")
 
     def __post_init__(self):
         super().___post_init___()
@@ -123,7 +123,7 @@ class SectionContent(Content):
 
 @dataclass
 class NewContent(Content):
-    __logger = Log("Model.Content.NewContent")
+    _logger = Log("Model.Content.NewContent")
 
     # title: str
     # main: str
@@ -138,7 +138,7 @@ class NewContent(Content):
             if len(code_split) != 5:
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{NewContent.__logger}:InvalidData") from e
+            raise ValueError(f"{NewContent._logger}:InvalidData") from e
         else:
             self.year = code_split[0]
             self.page_type = code_split[1]
@@ -151,24 +151,25 @@ class NewContent(Content):
 
     @classmethod
     def from_code(cls, code: str) -> "NewContent":
-        __logger = Log(f"{cls.__logger}.from_code")
+        _logger = Log(f"{cls._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 5:
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{__logger}:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
         else:
             match code_split[3]:
                 case "section":
                     return NewSectionContent(code)
                 case _:
-                    raise ValueError(f"{__logger}:UnknownType")
+                    raise ValueError(f"{_logger}:UnknownType")
 
     def parse(self, el: bs4.Tag):
+        _logger = Log(f"{NewContent._logger}.parse")
         title_el = el.find("h3", attrs={"data-for": "section_title"})
         if not isinstance(title_el, bs4.Tag):
-            raise Exception("PageParser.get_content:TitleIsNotTag")
+            raise Exception(f"{_logger}:NoTitleFound")
         title = title_el.text.lstrip().rstrip()
 
         main_el = el.find("div", {"class": "summarytext"})
@@ -195,7 +196,7 @@ class NewContent(Content):
 
 @dataclass
 class NewSectionContent(NewContent):
-    __logger = Log("Model.Content.NewSectionContent")
+    _logger = Log("Model.Content.NewSectionContent")
 
 
 __all__ = [

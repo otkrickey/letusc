@@ -7,7 +7,7 @@ from letusc.util import env_bool
 
 
 class TaskManager:
-    __logger = Log("TaskManager")
+    _logger = Log("TaskManager")
 
     def __init__(self):
         self.client = MongoClient(
@@ -18,13 +18,13 @@ class TaskManager:
         self.stop_flag = False
 
     def configure(self, watcher_config, worker_config) -> None:
-        __logger = Log(f"{TaskManager.__logger}.configure")
+        _logger = Log(f"{TaskManager._logger}.configure")
         self.watchers = []
         self.workers = []
         self.watcher_config = watcher_config
         self.worker_config = worker_config
 
-        __logger.info("Configuring watchers and workers")
+        _logger.info("Configuring watchers and workers")
         for watcher in watcher_config:
             __thread = Thread(
                 target=self.watcher,
@@ -40,8 +40,8 @@ class TaskManager:
             self.workers.append(__thread)
 
     def start(self):
-        __logger = Log(f"{TaskManager.__logger}.start")
-        __logger.info("Starting watchers and workers")
+        _logger = Log(f"{TaskManager._logger}.start")
+        _logger.info("Starting watchers and workers")
         for watcher in self.watchers:
             watcher.start()
 
@@ -49,12 +49,12 @@ class TaskManager:
             worker.start()
 
     def watcher(self, collection_name, task_queue):
-        __logger = Log(f"{TaskManager.__logger}.watcher")
+        _logger = Log(f"{TaskManager._logger}.watcher")
         pipeline = [
             {"$match": {"operationType": "insert"}},
             {"$project": {"fullDocument": 1}},
         ]
-        __logger.info(f"Watcher registered on collection: `{collection_name}`")
+        _logger.info(f"Watcher registered on collection: `{collection_name}`")
         with self.db[collection_name].watch(pipeline, max_await_time_ms=1000) as stream:
             for change in stream:
                 if self.stop_flag:  # stop the watcher
@@ -63,8 +63,8 @@ class TaskManager:
                 task_queue.put(change)
 
     def stop(self):
-        __logger = Log(f"{TaskManager.__logger}.stop")
-        __logger.info("Stopping watchers and workers")
+        _logger = Log(f"{TaskManager._logger}.stop")
+        _logger.info("Stopping watchers and workers")
         self.stop_flag = True
         self.client.close()
 

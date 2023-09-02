@@ -13,7 +13,7 @@ from .letus import LetusUser, LetusUserBase, LetusUserWithCookies, LetusUserWith
 
 @dataclass
 class AccountBase(BaseModel):
-    __logger = Log("Model.AccountBase")
+    _logger = Log("Model.AccountBase")
     multi_id: str  # 7 or 18 digit
 
     student_id: str = field(init=False)  # 7 digit
@@ -22,7 +22,7 @@ class AccountBase(BaseModel):
     Letus: LetusUserBase = field(init=False)
 
     def identify(self) -> None:
-        __logger = Log(f"{AccountBase.__logger}.identify")
+        _logger = Log(f"{AccountBase._logger}.identify")
         match len(self.multi_id):
             case 7:
                 self.key_name = "student_id"
@@ -31,7 +31,7 @@ class AccountBase(BaseModel):
                 self.key_name = "discord_id"
                 self.key = self.multi_id
             case _:
-                raise ValueError(f"{__logger}:InvalidMultiID")
+                raise ValueError(f"{_logger}:InvalidMultiID")
 
     def from_api(
         self, object: dict, attrs: list[tuple[str, type, Callable]] = []
@@ -55,7 +55,7 @@ class AccountBase(BaseModel):
 
 @dataclass
 class AccountDatabase(BaseDatabase, AccountBase):
-    __logger = Log("Model.Account.Database")
+    _logger = Log("Model.Account.Database")
     collection = MongoClient(URLManager.getMongo())["letus"]["accountsV2"]
 
     def check(
@@ -74,14 +74,14 @@ class AccountDatabase(BaseDatabase, AccountBase):
         try:
             super().push()
         except TypeError as e:
-            if str(e) == f"{BaseDatabase.__logger}.check:TypeError:Cookie":
+            if str(e) == f"{BaseDatabase._logger}.check:TypeError:Cookie":
                 return self.register()
             raise e
 
 
 @dataclass
 class Account(AccountDatabase, AccountBase):
-    __logger = Log("Model.Account")
+    _logger = Log("Model.Account")
 
     def __post_init__(self):
         self.identify()

@@ -3,8 +3,8 @@ from letusc.task.account_task import AccountTask
 
 
 def Account(queue):
-    __logger = Log("Worker.Account")
-    __logger.info("AccountWorker started")
+    _logger = Log("Worker.Account")
+    _logger.info("AccountWorker started")
     while True:
         change = queue.get()
 

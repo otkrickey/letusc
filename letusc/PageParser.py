@@ -1,4 +1,3 @@
-import hashlib
 import re
 
 import bs4
@@ -10,27 +9,27 @@ from letusc.model.account import Account
 from letusc.model.base import BaseDatabase
 from letusc.model.content import Content, NewContent
 from letusc.model.module import Module, NewModule
-from letusc.model.page import NewPage, Page, PageDatabase
+from letusc.model.page import NewPage, Page
 
 
 class PageParser:
-    __logger = Log("PageParser")
+    _logger = Log("PageParser")
 
     def __init__(self, account: Account, page_id: str):
         # prepare session information
-        PageParser.__logger.info("Preparing session information")
+        PageParser._logger.info("Preparing session information")
         self.account = account
         self.page = NewPage.from_code(page_id)
         try:
             self.page_old = Page.from_code(page_id)
         except ValueError as e:
-            if str(e) == f"{BaseDatabase.__logger}.pull:NotFound":
+            if str(e) == f"{BaseDatabase._logger}.pull:NotFound":
                 self.page_old = None
             else:
                 raise e
         else:
             self.page.accounts = self.page_old.accounts
-            PageParser.__logger.info(
+            PageParser._logger.info(
                 f"the `accounts` will be taken over from the old page"
             )
         self.contents: dict[str, NewContent] = {}
@@ -40,13 +39,13 @@ class PageParser:
         # if not self.account.discord_id in self.page.accounts:
         #     self.page.accounts.append(self.account.discord_id)
         if not self.account.Letus.cookies:
-            raise Exception(f"{PageParser.__logger}:NoCookies")
+            raise Exception(f"{PageParser._logger}:NoCookies")
         for cookie in self.account.Letus.cookies:
             if cookie.year == self.page.year:
                 self.cookie = cookie
                 break
         else:
-            raise Exception(f"{PageParser.__logger}:NoCookies")
+            raise Exception(f"{PageParser._logger}:NoCookies")
 
     def parse(self):
         # session
@@ -100,7 +99,7 @@ class PageParser:
                 self.modules.update({f"{module_type}:{module_id}": module})
 
     def prepare_session(self) -> None:
-        PageParser.__logger.info("Preparing session")
+        PageParser._logger.info("Preparing session")
         self.session = requests.Session()
         self.session.cookies.update({self.cookie.name: self.cookie.value})
         self.session.headers.update(
@@ -111,36 +110,29 @@ class PageParser:
 
     def get_session(self) -> None:
         # access to page
-        PageParser.__logger.info(f"Accessing to {self.page.url}")
+        PageParser._logger.info(f"Accessing to {self.page.url}")
         try:
             response = self.session.get(self.page.url)
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            PageParser.__logger.error(f"An HTTP error occurred: {e}")
+            PageParser._logger.error(f"An HTTP error occurred: {e}")
             match e.response.status_code:
                 case 404:
-                    raise Exception(f"{PageParser.__logger}:NotFound")
+                    raise Exception(f"{PageParser._logger}:NotFound")
                 case 503:
-                    raise Exception(f"{PageParser.__logger}:MoodleMaintenance")
+                    raise Exception(f"{PageParser._logger}:MoodleMaintenance")
                 case _:
-                    raise Exception(f"{PageParser.__logger}:UnknownHTTPError")
+                    raise Exception(f"{PageParser._logger}:UnknownHTTPError")
         except requests.exceptions.RequestException as e:
-            PageParser.__logger.error(f"An error occurred: {e}")
-            raise Exception(f"{PageParser.__logger}:UnknownError")
+            PageParser._logger.error(f"An error occurred: {e}")
+            raise Exception(f"{PageParser._logger}:UnknownError")
 
         # parse page
-        PageParser.__logger.info("Parsing page")
+        PageParser._logger.info("Parsing page")
         self.response = response.text
 
     def compare(self) -> list[dict]:
-        __logger = Log(f"{PageParser.__logger}.compare")
-        if not self.page_old:
-            __logger.info("No old page found")
-            return []
-        res = []
-        nc_list = self.contents
-        nm_list = self.modules
-        oc_list = {}
+        _logger = Log(f"{PageParser._logger}.compare")
 
         # # NOTE:DEBUG
         for inc, nc in enumerate(self.page.contents):
@@ -151,7 +143,36 @@ class PageParser:
             elif "1078139" in nc:
                 self.page.contents.pop(inc)
         # # NOTE:DEBUG:END
-        self.page.push()
+
+        res = []
+        nc_list = self.contents
+        nm_list = self.modules
+        if not self.page_old:
+            _logger.info("No old page found")
+            for nc in nc_list.keys():
+                code = f"{self.page.code}:{nc}"
+                content = {
+                    "code": code,
+                    "status": "new",
+                    "type": "content",
+                    "new": nc_list[nc],
+                    "old": None,
+                    "modules": [],
+                }
+                for nm in nm_list.keys():
+                    if nm_list[nm].content_id == nc_list[nc].content_id:
+                        code = f"{self.page.code}:{nc}:{nm}"
+                        module = {
+                            "code": code,
+                            "status": "new",
+                            "type": "module",
+                            "new": nm_list[nm],
+                            "old": None,
+                        }
+                        content["modules"].append(module)
+                res.append(content)
+            return res
+        oc_list = {}
 
         for oc in self.page_old.contents:
             key = ":".join(oc.split(":")[:2])

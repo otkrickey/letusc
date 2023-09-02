@@ -3,8 +3,8 @@ from letusc.task.content_task import ContentTask
 
 
 def Content(queue):
-    __logger = Log("Worker.ContentWorker")
-    __logger.info("ContentWorker started")
+    _logger = Log("Worker.ContentWorker")
+    _logger.info("ContentWorker started")
     while True:
         change = queue.get()
 

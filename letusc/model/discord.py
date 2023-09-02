@@ -7,7 +7,7 @@ from .base import BaseModel
 
 @dataclass
 class DiscordUserBase(BaseModel):
-    __logger = Log("Model.DiscordUserBase")
+    _logger = Log("Model.DiscordUserBase")
     discord_id: str
 
     username: str | None = None
@@ -37,12 +37,12 @@ class DiscordUserBase(BaseModel):
 
 @dataclass
 class DiscordUserAny(DiscordUserBase):
-    __logger = Log("Model.DiscordUserAny")
+    _logger = Log("Model.DiscordUserAny")
 
 
 @dataclass
 class DiscordUser(DiscordUserAny):
-    __logger = Log("Model.DiscordUser")
+    _logger = Log("Model.DiscordUser")
     username: str
     discriminator: str
 

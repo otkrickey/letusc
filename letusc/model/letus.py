@@ -9,7 +9,7 @@ from .cookie import Cookie
 
 @dataclass
 class LetusUserBase(BaseModel):
-    __logger = Log("Model.LetusUserBase")
+    _logger = Log("Model.LetusUserBase")
     student_id: str
     encrypted_password: str | None = None
     email: str = field(init=False)
@@ -58,18 +58,18 @@ class LetusUserBase(BaseModel):
 
 @dataclass
 class LetusUser(LetusUserBase):
-    __logger = Log("Model.LetusUser")
+    _logger = Log("Model.LetusUser")
 
 
 @dataclass
 class LetusUserWithPassword(LetusUser):
-    __logger = Log("Model.LetusUserWithPassword")
+    _logger = Log("Model.LetusUserWithPassword")
     encrypted_password: str
 
 
 @dataclass
 class LetusUserWithCookies(LetusUserWithPassword):
-    __logger = Log("Model.LetusUserWithCookies")
+    _logger = Log("Model.LetusUserWithCookies")
     cookies: list["Cookie"]
 
 

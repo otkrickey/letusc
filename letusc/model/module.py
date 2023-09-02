@@ -14,7 +14,7 @@ from .base import BaseDatabase, BaseModel
 
 @dataclass
 class ModuleBase(BaseModel):
-    __logger = Log("Model.ModuleBase")
+    _logger = Log("Model.ModuleBase")
     code: str  # `year:page_type:page_id:content_type:content_id:module_type:module_id`
 
     year: str = field(init=False)
@@ -76,7 +76,7 @@ class ModuleBase(BaseModel):
 
 @dataclass
 class ModuleDatabase(BaseDatabase, ModuleBase):
-    __logger = Log("Model.Module.Database")
+    _logger = Log("Model.Module.Database")
     collection = MongoClient(URLManager.getMongo())["letus"]["modules"]
 
     def check(
@@ -94,7 +94,7 @@ class ModuleDatabase(BaseDatabase, ModuleBase):
 
 @dataclass
 class Module(ModuleDatabase, ModuleBase):
-    __logger = Log("Model.Module")
+    _logger = Log("Model.Module")
 
     def ___post_init___(self):
         self.identify()
@@ -103,13 +103,13 @@ class Module(ModuleDatabase, ModuleBase):
 
     @classmethod
     def from_code(cls, code: str) -> "Module":
-        __logger = Log(f"{cls.__logger}.from_code")
+        _logger = Log(f"{cls._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 7:
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{__logger}:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
         else:
             match code_split[5]:
                 case "label":
@@ -125,12 +125,12 @@ class Module(ModuleDatabase, ModuleBase):
                 case "feedback":
                     return FeedbackModule(code)
                 case _:
-                    raise ValueError(f"{__logger}:UnknownType")
+                    raise ValueError(f"{_logger}:UnknownType")
 
 
 @dataclass
 class LabelModule(Module):
-    __logger = Log("Model.Module.LabelModule")
+    _logger = Log("Model.Module.LabelModule")
 
     main: str = field(init=False)
 
@@ -142,13 +142,13 @@ class LabelModule(Module):
             if not isinstance(main, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{LabelModule.__logger}:InvalidData") from e
+            raise ValueError(f"{LabelModule._logger}:InvalidData") from e
         self.from_api(object)
 
 
 @dataclass
 class PageModule(Module):
-    __logger = Log("Model.Module.PageModule")
+    _logger = Log("Model.Module.PageModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)
@@ -164,13 +164,13 @@ class PageModule(Module):
             if not isinstance(module_url, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{PageModule.__logger}:InvalidData") from e
+            raise ValueError(f"{PageModule._logger}:InvalidData") from e
         self.from_api(object)
 
 
 @dataclass
 class URLModule(Module):
-    __logger = Log("Model.Module.URLModule")
+    _logger = Log("Model.Module.URLModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)
@@ -186,13 +186,13 @@ class URLModule(Module):
             if not isinstance(module_url, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{URLModule.__logger}:InvalidData") from e
+            raise ValueError(f"{URLModule._logger}:InvalidData") from e
         self.from_api(object)
 
 
 @dataclass
 class ResourceModule(Module):
-    __logger = Log("Model.Module.ResourceModule")
+    _logger = Log("Model.Module.ResourceModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)
@@ -212,13 +212,13 @@ class ResourceModule(Module):
             if not isinstance(uploaded_at, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{ResourceModule.__logger}:InvalidData") from e
+            raise ValueError(f"{ResourceModule._logger}:InvalidData") from e
         self.from_api(object)
 
 
 @dataclass
 class FolderModule(Module):
-    __logger = Log("Model.Module.FolderModule")
+    _logger = Log("Model.Module.FolderModule")
 
     title: str = field(init=False)
 
@@ -230,13 +230,13 @@ class FolderModule(Module):
             if not isinstance(title, str):
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{FolderModule.__logger}:InvalidData") from e
+            raise ValueError(f"{FolderModule._logger}:InvalidData") from e
         self.from_api(object)
 
 
 @dataclass
 class FeedbackModule(Module):
-    __logger = Log("Model.Module.FeedbackModule")
+    _logger = Log("Model.Module.FeedbackModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)
@@ -256,13 +256,13 @@ class FeedbackModule(Module):
             # if not isinstance(uploaded_at, str):
             #     raise ValueError
         except Exception as e:
-            raise ValueError(f"{FeedbackModule.__logger}:InvalidData") from e
+            raise ValueError(f"{FeedbackModule._logger}:InvalidData") from e
         self.from_api(object)
 
 
 @dataclass
 class NewModule(Module):
-    __logger = Log("Model.Module.NewModule")
+    _logger = Log("Model.Module.NewModule")
 
     def __post_init__(self):
         self.identify()
@@ -271,7 +271,7 @@ class NewModule(Module):
             if len(code_split) != 7:
                 raise ValueError
         except Exception as e:
-            raise ValueError("Model.Content.from_api:InvalidData") from e
+            raise ValueError(f"{NewModule._logger}:InvalidData") from e
         else:
             self.year = code_split[0]
             self.page_type = code_split[1]
@@ -284,12 +284,13 @@ class NewModule(Module):
 
     @classmethod
     def from_code(cls, code: str) -> "NewModule":
+        _logger = Log(f"{NewModule._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 7:
                 raise ValueError
         except Exception as e:
-            raise ValueError("Model.Module.from_api:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
         else:
             match code_split[5]:
                 case "label":
@@ -305,7 +306,7 @@ class NewModule(Module):
                 case "feedback":
                     return NewFeedbackModule(code)
                 case _:
-                    cls.__logger.error(f"Unknown module type: {code_split[5]}")
+                    _logger.error(f"Unknown module type: {code_split[5]}")
                     return NewModule(code)
 
     def parse(self, el: bs4.Tag):
@@ -350,7 +351,7 @@ class NewModule(Module):
 
 @dataclass
 class NewLabelModule(NewModule):
-    __logger = Log("Model.Module.NewLabelModule")
+    _logger = Log("Model.Module.NewLabelModule")
 
     main: str = field(init=False)
 
@@ -361,7 +362,7 @@ class NewLabelModule(NewModule):
 
 @dataclass
 class NewPageModule(NewModule):
-    __logger = Log("Model.Module.NewPageModule")
+    _logger = Log("Model.Module.NewPageModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)
@@ -369,7 +370,7 @@ class NewPageModule(NewModule):
 
 @dataclass
 class NewURLModule(NewModule):
-    __logger = Log("Model.Module.NewURLModule")
+    _logger = Log("Model.Module.NewURLModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)
@@ -377,7 +378,7 @@ class NewURLModule(NewModule):
 
 @dataclass
 class NewResourceModule(NewModule):
-    __logger = Log("Model.Module.NewResourceModule")
+    _logger = Log("Model.Module.NewResourceModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)
@@ -386,14 +387,14 @@ class NewResourceModule(NewModule):
 
 @dataclass
 class NewFolderModule(NewModule):
-    __logger = Log("Model.Module.NewFolderModule")
+    _logger = Log("Model.Module.NewFolderModule")
 
     title: str = field(init=False)
 
 
 @dataclass
 class NewFeedbackModule(NewModule):
-    __logger = Log("Model.Module.NewFeedbackModule")
+    _logger = Log("Model.Module.NewFeedbackModule")
 
     title: str = field(init=False)
     module_url: str = field(init=False)

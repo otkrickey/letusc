@@ -9,7 +9,7 @@ from letusc.util import env
 
 
 class MessageBuilder:
-    __logger = Log("MessageBuilder")
+    _logger = Log("MessageBuilder")
 
     def __init__(self, content: str = "", thread_id: str | None = None):
         self.username = env("BOT_DISCORD_USERNAME")
@@ -70,7 +70,7 @@ class MessageBuilder:
         }
 
     def send(self):
-        __logger = Log(f"{MessageBuilder.__logger}.send")
+        _logger = Log(f"{MessageBuilder._logger}.send")
 
         payload = self.build()
         res = requests.post(
@@ -79,4 +79,4 @@ class MessageBuilder:
             data={"payload_json": json.dumps(payload, ensure_ascii=False)},
         )
 
-        __logger.debug(f"status_code: {res.status_code}")
+        _logger.debug(f"status_code: {res.status_code}")

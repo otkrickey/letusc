@@ -11,7 +11,7 @@ from .base_task import BaseTask
 
 @dataclass
 class AccountTask(BaseTask):
-    __logger = Log("Task.AccountTask")
+    _logger = Log("Task.AccountTask")
     # [must]
     task: str
 
@@ -29,12 +29,12 @@ class AccountTask(BaseTask):
             case "status":
                 return Status.from_copy(account)
             case _:
-                raise KeyError(f"{AccountTask.__logger}.from_api:UnknownAction")
+                raise KeyError(f"{AccountTask._logger}.from_api:UnknownAction")
 
 
 @dataclass
 class Login(AccountTask):
-    __logger = Log("Task.AccountTask.Login")
+    _logger = Log("Task.AccountTask.Login")
     # [auto]
     student_id: str
     discord_id: str
@@ -45,9 +45,9 @@ class Login(AccountTask):
     @classmethod
     def from_copy(cls, account: Account):
         if not isinstance(account.Letus, Letus.LetusUserWithPassword):
-            raise ValueError(f"{Login.__logger}.from_copy:PasswordError")
+            raise ValueError(f"{Login._logger}.from_copy:PasswordError")
         if not isinstance(account.Discord, Discord.DiscordUser):
-            raise ValueError(f"{Login.__logger}.from_copy:DiscordError")
+            raise ValueError(f"{Login._logger}.from_copy:DiscordError")
         return Login(
             multi_id=account.multi_id,
             task="account:check",
@@ -65,7 +65,7 @@ class Login(AccountTask):
 
 @dataclass
 class Status(AccountTask):  # NOTE: in development
-    __logger = Log("Task.AccountTask.Status")
+    _logger = Log("Task.AccountTask.Status")
     # [auto]
     student_id: str
     discord_id: str
@@ -76,9 +76,9 @@ class Status(AccountTask):  # NOTE: in development
     @classmethod
     def from_copy(cls, account: Account):
         if not isinstance(account.Letus, Letus.LetusUserWithCookies):
-            raise ValueError(f"{Status.__logger}.from_copy:CookiesError")
+            raise ValueError(f"{Status._logger}.from_copy:CookiesError")
         if not isinstance(account.Discord, Discord.DiscordUser):
-            raise ValueError(f"{Status.__logger}.from_copy:DiscordError")
+            raise ValueError(f"{Status._logger}.from_copy:DiscordError")
         return Status(
             multi_id=account.multi_id,
             task="account:status",

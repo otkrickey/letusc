@@ -8,7 +8,7 @@ from letusc.logger import Log
 
 @dataclass
 class BaseModel:
-    __logger = Log("Model.BaseModel")
+    _logger = Log("Model.BaseModel")
     # Add global methods here
 
     def identify(self) -> None:
@@ -18,7 +18,7 @@ class BaseModel:
     def from_api(
         self, object: dict, attrs: list[tuple[str, type, Callable]] = []
     ) -> None:
-        __logger = Log(f"{BaseModel.__logger}.from_api")
+        _logger = Log(f"{BaseModel._logger}.from_api")
         try:
             for attr_name, attr_type, converter in attrs:
                 converted_value = converter(object)
@@ -26,7 +26,7 @@ class BaseModel:
                     raise ValueError
                 setattr(self, attr_name, converted_value)
         except Exception as e:
-            raise ValueError(f"{__logger}:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
 
     def to_api(self) -> dict:
         raise NotImplementedError
@@ -34,42 +34,42 @@ class BaseModel:
 
 @dataclass
 class BaseDatabase(BaseModel):
-    __logger = Log("Model.BaseDatabase")
+    _logger = Log("Model.BaseDatabase")
     collection: Collection = field(init=False)
 
     def check(
         self, attrs: list[str] = [], types: list[tuple[str, str, type]] = []
     ) -> None:
-        __logger = Log(f"{BaseDatabase.__logger}.check")
+        _logger = Log(f"{BaseDatabase._logger}.check")
         if any(not hasattr(self, attr) for attr in attrs):
-            __logger.info("Attribute Error")
-            raise ValueError(f"{__logger}:AttributeError")
+            _logger.info("Attribute Error")
+            raise ValueError(f"{_logger}:AttributeError")
         for err_key, attr, attr_type in types:
             if not isinstance(getattr(self, attr, None), attr_type):
-                __logger.info(f"Type Error: {attr}={getattr(self, attr, None)}")
-                raise TypeError(f"{__logger}:TypeError:{err_key}")
-        __logger.info(f"Valid: {self.key_name}={self.key}")
+                _logger.info(f"Type Error: {attr}={getattr(self, attr, None)}")
+                raise TypeError(f"{_logger}:TypeError:{err_key}")
+        _logger.info(f"Valid: {self.key_name}={self.key}")
         return
 
     def pull(self) -> dict:
-        __logger = Log(f"{BaseDatabase.__logger}.pull")
-        __logger.debug(f"Pull {self.key_name}={self.key}")
+        _logger = Log(f"{BaseDatabase._logger}.pull")
+        _logger.debug(f"Pull {self.key_name}={self.key}")
         filter = {}
         filter.update({self.key_name: self.key})
         object = self.collection.find_one(filter)
         if object is None:
-            __logger.info("No data found")
-            raise ValueError(f"{__logger}:NotFound")
+            _logger.info("No data found")
+            raise ValueError(f"{_logger}:NotFound")
         return object
 
     def push(self) -> None:
-        __logger = Log(f"{BaseDatabase.__logger}.push")
-        __logger.debug(f"Push {self.key_name}={self.key}")
+        _logger = Log(f"{BaseDatabase._logger}.push")
+        _logger.debug(f"Push {self.key_name}={self.key}")
         try:
             self.check()
             self.pull()
         except ValueError as e:
-            if str(e) == f"{BaseDatabase.__logger}.pull:NotFound":
+            if str(e) == f"{BaseDatabase._logger}.pull:NotFound":
                 return self.register()
             raise e
         else:
@@ -77,21 +77,21 @@ class BaseDatabase(BaseModel):
         return
 
     def register(self) -> None:
-        __logger = Log(f"{BaseDatabase.__logger}.register")
-        __logger.debug(f"Register {self.key_name}={self.key}")
+        _logger = Log(f"{BaseDatabase._logger}.register")
+        _logger.debug(f"Register {self.key_name}={self.key}")
         try:
             self.collection.insert_one(self.to_api())
         except Exception as e:
-            raise ValueError(f"{__logger}:DatabaseError") from e
+            raise ValueError(f"{_logger}:DatabaseError") from e
         return
 
     def update(self) -> None:
-        __logger = Log(f"{BaseDatabase.__logger}.update")
-        __logger.debug(f"Update {self.key_name}={self.key}")
+        _logger = Log(f"{BaseDatabase._logger}.update")
+        _logger.debug(f"Update {self.key_name}={self.key}")
         try:
             self.collection.update_one(
                 {self.key_name: self.key}, {"$set": self.to_api()}, upsert=True
             )
         except Exception as e:
-            raise ValueError(f"{__logger}:DatabaseError") from e
+            raise ValueError(f"{_logger}:DatabaseError") from e
         return

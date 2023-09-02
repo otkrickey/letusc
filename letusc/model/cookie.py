@@ -7,7 +7,7 @@ from .base import BaseModel
 
 @dataclass
 class Cookie(BaseModel):
-    __logger = Log("Model.Cookie")
+    _logger = Log("Model.Cookie")
     name: str
     value: str
     year: str
