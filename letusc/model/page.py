@@ -98,7 +98,7 @@ class Page(PageDatabase, PageBase):
 
     @classmethod
     def from_code(cls, code: str) -> "Page":
-        _logger = Log(f"{cls._logger}.from_code")
+        _logger = Log(f"{Page._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 3:
@@ -132,7 +132,7 @@ class NewPage(Page):
             if len(code_split) != 3:
                 raise ValueError
         except Exception as e:
-            raise ValueError("Model.Page.from_api:InvalidData") from e
+            raise ValueError(f"{NewPage._logger}:InvalidData") from e
         else:
             self.year = code_split[0]
             self.page_type = code_split[1]
@@ -144,27 +144,29 @@ class NewPage(Page):
 
     @classmethod
     def from_code(cls, code: str) -> "NewPage":
+        _logger = Log(f"{NewPage._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 3:
                 raise ValueError
         except Exception as e:
-            raise ValueError("Model.Page.from_api:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
         else:
             match code_split[1]:
                 case "course":
                     return NewCoursePage(code)
                 case _:
-                    raise ValueError("Model.Page.from_api:UnknownType")
+                    raise ValueError(f"{_logger}:UnknownType")
 
     def parse(self, soup: BeautifulSoup):
+        _logger = Log(f"{NewPage._logger}.parse")
         title_el = soup.find(attrs={"class": "page-header-headings"})
         title = title_el.text if title_el else "<Error:NoTitleFound>"
         title = title.lstrip().rstrip()
 
         main = soup.find("section", {"id": "region-main"})
         if not isinstance(main, bs4.Tag):
-            raise ValueError("Model.Page.parse:MainSectionNotFound")
+            raise ValueError(f"{_logger}:NoMainFound")
         hash = parser.hash(parser.text_filter(str(main)))
 
         self.title = title

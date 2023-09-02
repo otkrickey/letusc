@@ -271,7 +271,7 @@ class NewModule(Module):
             if len(code_split) != 7:
                 raise ValueError
         except Exception as e:
-            raise ValueError("Model.Content.from_api:InvalidData") from e
+            raise ValueError(f"{NewModule._logger}:InvalidData") from e
         else:
             self.year = code_split[0]
             self.page_type = code_split[1]
@@ -284,12 +284,13 @@ class NewModule(Module):
 
     @classmethod
     def from_code(cls, code: str) -> "NewModule":
+        _logger = Log(f"{NewModule._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 7:
                 raise ValueError
         except Exception as e:
-            raise ValueError("Model.Module.from_api:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
         else:
             match code_split[5]:
                 case "label":
@@ -305,7 +306,7 @@ class NewModule(Module):
                 case "feedback":
                     return NewFeedbackModule(code)
                 case _:
-                    cls._logger.error(f"Unknown module type: {code_split[5]}")
+                    _logger.error(f"Unknown module type: {code_split[5]}")
                     return NewModule(code)
 
     def parse(self, el: bs4.Tag):

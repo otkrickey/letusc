@@ -166,9 +166,10 @@ class NewContent(Content):
                     raise ValueError(f"{_logger}:UnknownType")
 
     def parse(self, el: bs4.Tag):
+        _logger = Log(f"{NewContent._logger}.parse")
         title_el = el.find("h3", attrs={"data-for": "section_title"})
         if not isinstance(title_el, bs4.Tag):
-            raise Exception("PageParser.get_content:TitleIsNotTag")
+            raise Exception(f"{_logger}:NoTitleFound")
         title = title_el.text.lstrip().rstrip()
 
         main_el = el.find("div", {"class": "summarytext"})
