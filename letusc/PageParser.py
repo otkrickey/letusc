@@ -1,4 +1,3 @@
-import hashlib
 import re
 
 import bs4
@@ -10,7 +9,7 @@ from letusc.model.account import Account
 from letusc.model.base import BaseDatabase
 from letusc.model.content import Content, NewContent
 from letusc.model.module import Module, NewModule
-from letusc.model.page import NewPage, Page, PageDatabase
+from letusc.model.page import NewPage, Page
 
 
 class PageParser:
@@ -134,13 +133,6 @@ class PageParser:
 
     def compare(self) -> list[dict]:
         _logger = Log(f"{PageParser._logger}.compare")
-        if not self.page_old:
-            _logger.info("No old page found")
-            return []
-        res = []
-        nc_list = self.contents
-        nm_list = self.modules
-        oc_list = {}
 
         # # NOTE:DEBUG
         for inc, nc in enumerate(self.page.contents):
@@ -151,7 +143,36 @@ class PageParser:
             elif "1078139" in nc:
                 self.page.contents.pop(inc)
         # # NOTE:DEBUG:END
-        self.page.push()
+
+        res = []
+        nc_list = self.contents
+        nm_list = self.modules
+        if not self.page_old:
+            _logger.info("No old page found")
+            for nc in nc_list.keys():
+                code = f"{self.page.code}:{nc}"
+                content = {
+                    "code": code,
+                    "status": "new",
+                    "type": "content",
+                    "new": nc_list[nc],
+                    "old": None,
+                    "modules": [],
+                }
+                for nm in nm_list.keys():
+                    if nm_list[nm].content_id == nc_list[nc].content_id:
+                        code = f"{self.page.code}:{nc}:{nm}"
+                        module = {
+                            "code": code,
+                            "status": "new",
+                            "type": "module",
+                            "new": nm_list[nm],
+                            "old": None,
+                        }
+                        content["modules"].append(module)
+                res.append(content)
+            return res
+        oc_list = {}
 
         for oc in self.page_old.contents:
             key = ":".join(oc.split(":")[:2])

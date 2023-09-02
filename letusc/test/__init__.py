@@ -117,6 +117,8 @@ def test_discord_webhook():
     _logger.info("test_discord_webhook")
     from datetime import datetime
 
+    from letusc.MessageBuilder import MessageBuilder
+
     THREAD_ID = 1145207293105942668
     builder = MessageBuilder(thread_id=str(THREAD_ID))
     builder.addEmbed(
