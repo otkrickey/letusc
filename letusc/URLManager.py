@@ -3,7 +3,7 @@ from letusc.util import env
 
 
 class URLManager:
-    __logger = Log("URLManager")
+    _logger = Log("URLManager")
     current_year = "2023"
     origin = env("URL_ORIGIN")
     icon = env("URL_ICON")
@@ -48,7 +48,7 @@ class URLManager:
             type = code_split[1]
             object_id = code_split[2]
         except Exception as e:
-            raise ValueError(f"{URLManager.__logger}.getPageByCode:InvalidCode") from e
+            raise ValueError(f"{URLManager._logger}.getPageByCode:InvalidCode") from e
         else:
             return URLManager.getPage(year, type, object_id)
 
@@ -69,8 +69,6 @@ class URLManager:
             type = code_split[5]
             object_id = code_split[6]
         except Exception as e:
-            raise ValueError(
-                f"{URLManager.__logger}.getModuleByCode:InvalidCode"
-            ) from e
+            raise ValueError(f"{URLManager._logger}.getModuleByCode:InvalidCode") from e
         else:
             return URLManager.getModule(year, type, object_id)

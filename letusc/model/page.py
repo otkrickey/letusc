@@ -15,7 +15,7 @@ from .base import BaseDatabase, BaseModel
 
 @dataclass
 class PageBase(BaseModel):
-    __logger = Log("Model.PageBase")
+    _logger = Log("Model.PageBase")
     code: str  # `year:page_type:page_id`
 
     year: str = field(init=False)
@@ -69,7 +69,7 @@ class PageBase(BaseModel):
 
 @dataclass
 class PageDatabase(BaseDatabase, PageBase):
-    __logger = Log("Model.Page.Database")
+    _logger = Log("Model.Page.Database")
     collection = MongoClient(URLManager.getMongo())["letus"]["pagesV2"]
 
     def check(
@@ -89,7 +89,7 @@ class PageDatabase(BaseDatabase, PageBase):
 
 @dataclass
 class Page(PageDatabase, PageBase):
-    __logger = Log("Model.Page")
+    _logger = Log("Model.Page")
 
     def ___post_init___(self):
         self.identify()
@@ -98,24 +98,24 @@ class Page(PageDatabase, PageBase):
 
     @classmethod
     def from_code(cls, code: str) -> "Page":
-        __logger = Log(f"{cls.__logger}.from_code")
+        _logger = Log(f"{cls._logger}.from_code")
         try:
             code_split = code.split(":")
             if len(code_split) != 3:
                 raise ValueError
         except Exception as e:
-            raise ValueError(f"{__logger}:InvalidData") from e
+            raise ValueError(f"{_logger}:InvalidData") from e
         else:
             match code_split[1]:
                 case "course":
                     return CoursePage(code)
                 case _:
-                    raise ValueError(f"{__logger}:UnknownType")
+                    raise ValueError(f"{_logger}:UnknownType")
 
 
 @dataclass
 class CoursePage(Page):
-    __logger = Log("Model.CoursePage")
+    _logger = Log("Model.CoursePage")
 
     def __post_init__(self):
         super().___post_init___()
@@ -123,7 +123,7 @@ class CoursePage(Page):
 
 @dataclass
 class NewPage(Page):
-    __logger = Log("Model.Page.NewPage")
+    _logger = Log("Model.Page.NewPage")
 
     def __post_init__(self):
         self.identify()
@@ -176,7 +176,7 @@ class NewPage(Page):
 
 @dataclass
 class NewCoursePage(NewPage):
-    __logger = Log("Model.CoursePage")
+    _logger = Log("Model.CoursePage")
 
 
 __all__ = [

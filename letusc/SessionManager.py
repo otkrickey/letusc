@@ -14,15 +14,15 @@ from letusc.util import env
 
 
 class SessionAutomator:
-    __logger = Log("Session.Automator")
+    _logger = Log("Session.Automator")
 
     def __init__(self, account: AccountBase):
         self.CHROME_DRIVER_PATH = env("CHROME_DRIVER_PATH")
         self.account = account
 
     def register(self):
-        __logger = Log(f"{SessionAutomator.__logger}.register")
-        __logger.debug("Register to letus")
+        _logger = Log(f"{SessionAutomator._logger}.register")
+        _logger.debug("Register to letus")
 
         self.service = Service(self.CHROME_DRIVER_PATH)
         chrome_options = webdriver.ChromeOptions()
@@ -32,8 +32,8 @@ class SessionAutomator:
         self.load_cookie()
 
     def login_letus(self):
-        __logger = Log(f"{SessionAutomator.__logger}.login_letus")
-        __logger.debug("Login to letus (chrome)")
+        _logger = Log(f"{SessionAutomator._logger}.login_letus")
+        _logger.debug("Login to letus (chrome)")
 
         auth_url = URLManager.getAuth()
         self.driver.get(auth_url)
@@ -44,26 +44,26 @@ class SessionAutomator:
         while True:
             origin_url = URLManager.getOrigin()
             if origin_url in self.driver.current_url:
-                __logger.debug("Letus Login Success")
+                _logger.debug("Letus Login Success")
                 break
             elif time.time() > timeout:
-                __logger.error("Timeout while accessing Letus Login Page")
-                raise TimeoutError(f"{__logger}:Timeout")
+                _logger.error("Timeout while accessing Letus Login Page")
+                raise TimeoutError(f"{_logger}:Timeout")
             elif "https://login.microsoftonline.com" in self.driver.current_url:
                 while True:
                     if time.time() > timeout:
-                        __logger.error("Timeout while accessing Letus Login Page")
-                        raise TimeoutError(f"{__logger}:Timeout")
+                        _logger.error("Timeout while accessing Letus Login Page")
+                        raise TimeoutError(f"{_logger}:Timeout")
                     try:
                         self.login_ms()
                     except ValueError as e:
                         if (
                             str(e)
-                            == f"{SessionAutomator.__logger}.login_ms:PasswordError"
+                            == f"{SessionAutomator._logger}.login_ms:PasswordError"
                         ):
                             raise e
                     except:
-                        __logger.warn("Retrying...")
+                        _logger.warn("Retrying...")
                         continue
                     else:
                         break
@@ -71,27 +71,27 @@ class SessionAutomator:
                 continue
 
     def login_ms(self):
-        __logger = Log(f"{SessionAutomator.__logger}.login_ms")
-        __logger.debug("Login to Microsoft")
+        _logger = Log(f"{SessionAutomator._logger}.login_ms")
+        _logger.debug("Login to Microsoft")
         auth_url = URLManager.getAuth()
         self.driver.get(auth_url)
 
         # wait [idp.admin.tus.ac.jp]
-        __logger.debug("Wait for [idp.admin.tus.ac.jp]")
-        __logger.debug("Click `next` on [idp.admin.tus.ac.jp]")
+        _logger.debug("Wait for [idp.admin.tus.ac.jp]")
+        _logger.debug("Click `next` on [idp.admin.tus.ac.jp]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located((By.NAME, "_eventId_ChooseSam2"))
         ).click()
 
         # wait [login.microsoftonline.com][email]
-        __logger.debug("Wait for [login.microsoftonline.com][email]")
+        _logger.debug("Wait for [login.microsoftonline.com][email]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located((By.TAG_NAME, "body"))
         )
         try:
             # wait [login.microsoftonline.com][email][select]
-            __logger.debug("Wait for [login.microsoftonline.com][email][select]")
-            __logger.debug(
+            _logger.debug("Wait for [login.microsoftonline.com][email][select]")
+            _logger.debug(
                 "Select `email` on [login.microsoftonline.com][email][select]"
             )
             WebDriverWait(self.driver, 3).until(
@@ -101,12 +101,12 @@ class SessionAutomator:
             ).click()
         except:
             # wait [login.microsoftonline.com][email][input]
-            __logger.debug("Wait for [login.microsoftonline.com][email][input]")
-            __logger.debug("Input `email` on [login.microsoftonline.com][email][input]")
+            _logger.debug("Wait for [login.microsoftonline.com][email][input]")
+            _logger.debug("Input `email` on [login.microsoftonline.com][email][input]")
             WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.NAME, "loginfmt"))
             ).send_keys(self.account.Letus.email)
-            __logger.debug("Click `next` on [login.microsoftonline.com][email][input]")
+            _logger.debug("Click `next` on [login.microsoftonline.com][email][input]")
             WebDriverWait(self.driver, 3).until(
                 EC.presence_of_element_located(
                     (By.ID, "idSIButton9") and (By.XPATH, '//input[@value="Next"]')
@@ -114,12 +114,12 @@ class SessionAutomator:
             ).click()
 
         # wait [login.microsoftonline.com][password]
-        __logger.debug("Wait for [login.microsoftonline.com][password]")
-        __logger.debug("Input `password` on [login.microsoftonline.com][password]")
+        _logger.debug("Wait for [login.microsoftonline.com][password]")
+        _logger.debug("Input `password` on [login.microsoftonline.com][password]")
         WebDriverWait(self.driver, 5).until(
             EC.presence_of_element_located((By.NAME, "passwd"))
         ).send_keys(self.account.Letus.encrypted_password)
-        __logger.debug("Click `sign in` on [login.microsoftonline.com][password]")
+        _logger.debug("Click `sign in` on [login.microsoftonline.com][password]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located(
                 (By.ID, "idSIButton9") and (By.XPATH, '//input[@value="Sign in"]')
@@ -132,26 +132,26 @@ class SessionAutomator:
                 EC.presence_of_element_located((By.ID, "passwordError"))
             )
         except:
-            __logger.debug("Password is Valid")
+            _logger.debug("Password is Valid")
         else:
-            __logger.error("Password Error")
-            raise ValueError(f"{__logger}:PasswordError")
+            _logger.error("Password Error")
+            raise ValueError(f"{_logger}:PasswordError")
 
         # wait [login.microsoftonline.com][DontShowAgain]
-        __logger.debug("Wait for [login.microsoftonline.com][DontShowAgain]")
+        _logger.debug("Wait for [login.microsoftonline.com][DontShowAgain]")
         WebDriverWait(self.driver, 5).until(
             EC.presence_of_element_located((By.NAME, "DontShowAgain"))
         ).click()
-        __logger.debug("Click `yes` on [login.microsoftonline.com][DontShowAgain]")
+        _logger.debug("Click `yes` on [login.microsoftonline.com][DontShowAgain]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located(
                 (By.ID, "idSIButton9") and (By.XPATH, '//input[@value="Yes"]')
             )
         ).click()
-        __logger.info("Microsoft Login Success")
+        _logger.info("Microsoft Login Success")
 
     def load_cookie(self):
-        __logger = Log(f"{SessionAutomator.__logger}.load_cookie")
+        _logger = Log(f"{SessionAutomator._logger}.load_cookie")
         cookies = self.driver.get_cookies()
         new_cookies = []
         for new_cookie in cookies:
@@ -163,7 +163,7 @@ class SessionAutomator:
                 )
                 new_cookies.append(cookie)
                 text = f'"\33[36mMoodleSession{cookie.year}\33[0m": "\33[36m{cookie.value}\33[0m"'
-                __logger.info("Cookie found: {" + text + "}")
+                _logger.info("Cookie found: {" + text + "}")
         if isinstance(self.account.Letus, Letus.LetusUserWithCookies):
             for new_cookie in new_cookies:
                 for cookie in self.account.Letus.cookies:
@@ -178,17 +178,17 @@ class SessionAutomator:
 
 
 class SessionManager(SessionAutomator):
-    __logger = Log("Session.Manager")
+    _logger = Log("Session.Manager")
 
     def login(self):
-        __logger = Log(f"{SessionManager.__logger}.login")
-        __logger.debug("Login to letus")
+        _logger = Log(f"{SessionManager._logger}.login")
+        _logger.debug("Login to letus")
         if isinstance(self.account.Letus, Letus.LetusUserWithCookies):
             for cookie in self.account.Letus.cookies:
                 text = f'"\33[36m{cookie.name}\33[0m": "\33[36m{cookie.value}\33[0m"'
-                __logger.info("Cookie found: {" + text + "}")
+                _logger.info("Cookie found: {" + text + "}")
         else:
-            __logger.warn("Cookie not found")
+            _logger.warn("Cookie not found")
         self.register()
 
 

@@ -12,7 +12,7 @@ from .base_task import BaseTask
 
 @dataclass
 class ContentTask(BaseTask):
-    __logger = Log("Task.ContentTask")
+    _logger = Log("Task.ContentTask")
 
     task: str
     parser: PageParser
@@ -22,7 +22,7 @@ class ContentTask(BaseTask):
 
     @classmethod
     def from_api(cls, task: dict) -> "ContentTask":
-        cls.__logger.info("Initializing ContentTask from API")
+        cls._logger.info("Initializing ContentTask from API")
         account = Account(task["discord_id"])
         parser = PageParser(account, task["code"])
 
@@ -31,19 +31,18 @@ class ContentTask(BaseTask):
             case "fetch":
                 return FetchContent.from_copy(account, parser)
             case _:
-                raise KeyError(f"{ContentTask.__logger}.from_api:UnknownAction")
+                raise KeyError(f"{ContentTask._logger}.from_api:UnknownAction")
 
 
 @dataclass
 class FetchContent(ContentTask):
-    __logger = Log("Task.ContentTask.Fetch")
+    _logger = Log("Task.ContentTask.Fetch")
 
     student_id: str
     discord_id: str
 
     @classmethod
-    def from_copy(cls, account: Account, parser: PageParser):
-        cls.__logger.info("Initializing FetchContent from copy")
+        cls._logger.info("Initializing FetchContent from copy")
         return cls(
             multi_id=account.multi_id,
             student_id=account.student_id,
@@ -53,7 +52,7 @@ class FetchContent(ContentTask):
         )
 
     def run(self):
-        __logger = Log(f"{FetchContent.__logger}.run")
+        _logger = Log(f"{FetchContent._logger}.run")
         self.parser.parse()
         contents = self.parser.compare()
         if len(contents) == 0:
@@ -82,9 +81,9 @@ class FetchContent(ContentTask):
                 content=content,
                 thread_id="1146305009076686868",
             )
-            __logger.debug("-" * 70)
+            _logger.debug("-" * 70)
             short_code = f"`{new.content_type}:{new.content_id}`"
-            __logger.debug(f"{status}, {short_code}, 「{new.title}」")
+            _logger.debug(f"{status}, {short_code}, 「{new.title}」")
 
             fields = []
 
@@ -96,13 +95,13 @@ class FetchContent(ContentTask):
                 old = module["old"]
                 if not isinstance(new, Module) or not isinstance(old, Module):
                     continue
-                __logger.debug("-" * 90)
+                _logger.debug("-" * 90)
                 name = f"[{new.module_type}] {new.title} ({status}!)"
                 short_code = f"`{new.module_type}:{new.module_id}`"
                 value = f"{new.main or 'no description'}\n[{short_code}]({new.module_url or new.url})\n"
                 fields.append({"name": name, "value": value, "inline": False})
 
-                __logger.debug(f"{status}, {short_code}, 「{new.title}」")
+                _logger.debug(f"{status}, {short_code}, 「{new.title}」")
 
                 for ignore_id in ignore_ids:
                     if ignore_id not in new.code:
