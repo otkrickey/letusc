@@ -1,72 +1,66 @@
-from threading import Thread
-
-from pymongo import MongoClient
+from dataclasses import dataclass
+from enum import Enum
+from queue import Queue
+from threading import Event, Thread
+from typing import Callable
 
 from letusc.logger import Log
-from letusc.util import env_bool
+
+
+class Keys(Enum):
+    account = "account"
+    content = "content"
+    discord = "discord"
+
+
+@dataclass
+class TaskConfig:
+    key: Keys
+    queue: Queue
+    watcher: Callable[[Queue, Event], None]
+    worker: Callable[[Queue, Event], None]
 
 
 class TaskManager:
     _logger = Log("TaskManager")
+    _instance: "TaskManager"
+    queue: dict[Keys, Queue] = {}
+    watcher: dict[Keys, Thread] = {}
+    worker: dict[Keys, Thread] = {}
+    exit_event = Event()
 
-    def __init__(self):
-        self.client = MongoClient(
-            "mongodb+srv://otkrickey:Tm6Mp291LJwFIscK@letus.tcigkrt.mongodb.net/?retryWrites=true&w=majority"
-        )
-        db_name = "task_test" if env_bool("TEST") else "task"
-        self.db = self.client[db_name]
-        self.stop_flag = False
+    def __new__(cls) -> "TaskManager":
+        if not hasattr(cls, "_instance"):
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
-    def configure(self, watcher_config, worker_config) -> None:
-        _logger = Log(f"{TaskManager._logger}.configure")
-        self.watchers = []
-        self.workers = []
-        self.watcher_config = watcher_config
-        self.worker_config = worker_config
-
-        _logger.info("Configuring watchers and workers")
-        for watcher in watcher_config:
-            __thread = Thread(
-                target=self.watcher,
-                args=(
-                    watcher["i"],
-                    watcher["q"],
-                ),
-                daemon=True,
-            )
-            self.watchers.append(__thread)
-        for worker in worker_config:
-            __thread = Thread(target=worker["w"], args=(worker["q"],), daemon=True)
-            self.workers.append(__thread)
+    def configure(self, configs: list["TaskConfig"]) -> None:
+        for c in configs:
+            args = (c.queue, self.exit_event)
+            watcher_thread = Thread(target=c.watcher, args=args, daemon=True)
+            worker_thread = Thread(target=c.worker, args=args, daemon=True)
+            self.queue.update({c.key: c.queue})
+            self.watcher.update({c.key: watcher_thread})
+            self.worker.update({c.key: worker_thread})
 
     def start(self):
         _logger = Log(f"{TaskManager._logger}.start")
         _logger.info("Starting watchers and workers")
-        for watcher in self.watchers:
+        for watcher in self.watcher.values():
             watcher.start()
-
-        for worker in self.workers:
+        for worker in self.worker.values():
             worker.start()
 
-    def watcher(self, collection_name, task_queue):
-        _logger = Log(f"{TaskManager._logger}.watcher")
-        pipeline = [
-            {"$match": {"operationType": "insert"}},
-            {"$project": {"fullDocument": 1}},
-        ]
-        _logger.info(f"Watcher registered on collection: `{collection_name}`")
-        with self.db[collection_name].watch(pipeline, max_await_time_ms=1000) as stream:
-            for change in stream:
-                if self.stop_flag:  # stop the watcher
-                    task_queue.put(None)
-                    break
-                task_queue.put(change)
-
-    def stop(self):
+    def stop(self, signum, frame):
         _logger = Log(f"{TaskManager._logger}.stop")
         _logger.info("Stopping watchers and workers")
-        self.stop_flag = True
-        self.client.close()
+        self.exit_event.set()
+
+    @staticmethod
+    def get_queue(key: Keys) -> Queue:
+        queue = TaskManager.queue.get(key)
+        assert queue is not None
+        return queue
 
 
 __all__ = [

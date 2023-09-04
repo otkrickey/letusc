@@ -1,10 +1,15 @@
-import queue
+import signal
+from queue import Queue
 
-import letusc.worker as Worker
-from letusc.TaskManager import TaskManager
+from letusc.discord import run_bot
+from letusc.TaskManager import Keys, TaskConfig, TaskManager
 from letusc.test import test
+from letusc.test.post_test import post_test
 from letusc.util import env_bool
 from letusc.VPNManager import VPNController
+from letusc.watcher.db_watcher import accountWatcher, contentWatcher
+from letusc.worker.db_worker import accountWorker, contentWorker
+from letusc.worker.discord_worker import discordWorker
 
 
 def main(TM: TaskManager):
@@ -15,20 +20,16 @@ def main(TM: TaskManager):
         VC = VPNController()
         VC.connect()
 
-    AccountTaskQueue = queue.Queue()
-    ContentTaskQueue = queue.Queue()
-    watcher_config = [
-        # {i: watcher id, q: task queue}
-        {"i": "account", "q": AccountTaskQueue},
-        {"i": "content", "q": ContentTaskQueue},
+    task_configs = [
+        TaskConfig(Keys.account, Queue(), accountWatcher, accountWorker),
+        TaskConfig(Keys.content, Queue(), contentWatcher, contentWorker),
+        TaskConfig(Keys.discord, Queue(), run_bot, discordWorker),
     ]
-    worker_config = [
-        # {w: worker function, q: task queue}
-        {"w": Worker.Account, "q": AccountTaskQueue},
-        {"w": Worker.Content, "q": ContentTaskQueue},
-    ]
-    TM.configure(watcher_config, worker_config)
+    TM.configure(task_configs)
     TM.start()
+
+    if is_test:
+        post_test()
 
 
 if __name__ == "__main__":
@@ -39,5 +40,5 @@ if __name__ == "__main__":
             pass
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
-        TM.stop()
+        signal.signal(signal.SIGINT, TM.stop)
         exit(0)

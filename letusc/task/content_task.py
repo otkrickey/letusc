@@ -83,7 +83,7 @@ class FetchContent(ContentTask):
                 content += "に変更がありました。"
             builder = MessageBuilder(
                 content=content,
-                thread_id="1146305009076686868",
+                thread_id="1148252344551743538",
             )
             _logger.debug("-" * 70)
             short_code = f"`{nc.content_type}:{nc.content_id}`"
