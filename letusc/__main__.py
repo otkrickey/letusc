@@ -1,12 +1,12 @@
-from letusc.discord import LetusClient
-from letusc.discord.cogs import Account, Page
-from letusc.discord.cogs.task import Task
+from letusc.cogs import Account, Page, Task
 from letusc.logger import L
 from letusc.TaskManager import TaskManager
 from letusc.test.post_test import async_post_test
 from letusc.test.test import test
 from letusc.util import env_bool
 from letusc.VPNManager import VPNManager
+
+from .bot import LetusBotClient
 
 
 def async_main():
@@ -20,7 +20,7 @@ def async_main():
 
     # initialize managers
     manager = TaskManager()
-    client = LetusClient()
+    client = LetusBotClient()
     loop = manager.get_loop()
 
     client.add_cogMeta(Account)

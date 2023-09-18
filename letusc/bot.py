@@ -9,13 +9,13 @@ from letusc.TaskManager import TaskManager
 from letusc.util import env
 
 
-class LetusClient(commands.Bot):
+class LetusBotClient(commands.Bot):
     _l = L()
-    bot: "LetusClient"
+    bot: "LetusBotClient"
     ready_event: asyncio.Event
     cogs: list[discord.CogMeta] = []
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "LetusClient":
+    def __new__(cls, *args: Any, **kwargs: Any) -> "LetusBotClient":
         if not hasattr(cls, "bot"):
             cls.bot = commands.Bot.__new__(cls, *args, **kwargs)
         if not hasattr(cls, "ready_event"):
@@ -36,19 +36,19 @@ class LetusClient(commands.Bot):
         self.ready_event.set()
 
     @staticmethod
-    async def get_client() -> "LetusClient":
-        _l = L(LetusClient.__name__).gm("get_client")
-        await LetusClient.ready_event.wait()
-        return LetusClient.bot
+    async def get_client() -> "LetusBotClient":
+        _l = L(LetusBotClient.__name__).gm("get_client")
+        await LetusBotClient.ready_event.wait()
+        return LetusBotClient.bot
 
     @staticmethod
     async def wait_ready():
-        _l = L(LetusClient.__name__).gm("wait_ready")
-        await LetusClient.ready_event.wait()
+        _l = L(LetusBotClient.__name__).gm("wait_ready")
+        await LetusBotClient.ready_event.wait()
 
     async def run_bot(self):
         _l = self._l.gm("run_bot")
-        for cog in LetusClient.cogs:
+        for cog in LetusBotClient.cogs:
             _l.info(f"Adding cog: {cog.__name__}")
             self.add_cog(cog(self))
         TaskManager.get_loop().create_task(self.wait_exit())
@@ -63,5 +63,5 @@ class LetusClient(commands.Bot):
 
     @staticmethod
     def add_cogMeta(cog: discord.CogMeta) -> None:
-        _l = L(LetusClient.__name__).gm("add_cogMeta")
-        LetusClient.cogs.append(cog)
+        _l = L(LetusBotClient.__name__).gm("add_cogMeta")
+        LetusBotClient.cogs.append(cog)

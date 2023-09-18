@@ -6,9 +6,9 @@ from letusc.util import env
 
 async def async_post_test():
     _l = L("async_post_test")
-    from letusc.discord import LetusClient
+    from ..bot import LetusBotClient
 
-    await LetusClient.wait_ready()
+    await LetusBotClient.wait_ready()
 
     # \\ test function here //
     # await test_send_message()

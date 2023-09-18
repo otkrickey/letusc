@@ -9,12 +9,13 @@ from discord import Embed, EmbedField, TextChannel, Thread, User
 from discord.abc import Messageable
 from discord.ui import View
 
-from letusc.discord import LetusClient
 from letusc.logger import L
 from letusc.modelv7.content import ContentBase
 from letusc.modelv7.module import ModuleBase
 from letusc.modelv7.page import PageBase
 from letusc.URLManager import URLManager
+
+from ..bot import LetusBotClient
 
 __all__ = [
     "status_",
@@ -174,7 +175,7 @@ class DiscordChat:
     @classmethod
     async def getByID(cls, id: int) -> "DiscordChat":
         _l = L(cls.__name__).gm("getByID")
-        client = await LetusClient.get_client()
+        client = await LetusBotClient.get_client()
         chat = client.get_channel(id)
         if not chat:
             chat = client.get_user(id)
@@ -214,7 +215,7 @@ class DiscordChatUser(DiscordChat):
     @classmethod
     async def get(cls, user_id: int) -> "DiscordChatUser":
         _l = L(cls.__name__).gm("get")
-        client = await LetusClient.get_client()
+        client = await LetusBotClient.get_client()
         user = client.get_user(user_id)
         if not isinstance(user, User):
             raise ValueError(_l.c("UserNotFound"))
@@ -237,7 +238,7 @@ class DiscordChatChannel(DiscordChat):
     @classmethod
     async def get(cls, channel_id: int) -> "DiscordChatChannel":
         _l = L(cls.__name__).gm("get")
-        client = await LetusClient.get_client()
+        client = await LetusBotClient.get_client()
         channel = client.get_channel(channel_id)
         if not isinstance(channel, TextChannel):
             raise ValueError(_l.c("ChannelNotFound"))
@@ -260,7 +261,7 @@ class DiscordChatThread(DiscordChat):
     @classmethod
     async def get(cls, channel_id: int, thread_id: int) -> "DiscordChatThread":
         _l = L(cls.__name__).gm("get")
-        client = await LetusClient.get_client()
+        client = await LetusBotClient.get_client()
         channel = client.get_channel(channel_id)
         if not isinstance(channel, TextChannel):
             raise ValueError(_l.c("ChannelNotFound"))
