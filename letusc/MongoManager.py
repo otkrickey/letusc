@@ -23,8 +23,6 @@ class MongoManager:
 
     @staticmethod
     def get_db(database_name: str) -> AsyncIOMotorDatabase:
-        if env_bool("TEST"):
-            database_name = f"{database_name}_test"
         return MongoManager.get_client()[database_name]
 
     @staticmethod
