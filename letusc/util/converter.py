@@ -1,4 +1,4 @@
-def strs_converter(data: list) -> list[str]:
+def strs2list(data: list) -> list[str]:
     if not (isinstance(data, list) and all(isinstance(item, str) for item in data)):
         raise ValueError
     return data

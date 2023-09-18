@@ -1,1 +1,5 @@
-from .run import run_bot
+from .client import LetusClient
+
+__all__ = [
+    "LetusClient",
+]

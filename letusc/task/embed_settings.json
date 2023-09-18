@@ -1,0 +1,87 @@
+{
+    "task.page.fetch:NotFound": {
+        "content": "",
+        "title": "Letusページの取得 `{id}`",
+        "description": "Letusページ(ID:`{id}`)はデータベースに存在しません。\n登録する場合は以下のボタンを押してください。",
+        "color": 16711680,
+        "url": "",
+        "fields": []
+    },
+    "task.page.fetch:Start": {
+        "content": "",
+        "title": "Letusページの取得 `{id}`",
+        "description": "最新のLetusページ(ID:`{id}`)を取得しています。\n変更が発見された場合はThreadに通知します。",
+        "color": 4176208,
+        "url": "",
+        "fields": []
+    },
+    "task.page.fetch:OnThread": {
+        "content": "",
+        "title": "{title}",
+        "description": "最新のLetusページ(ID:`{id}`)の取得が完了しました。",
+        "color": 4176208,
+        "url": "{url}"
+    },
+    "task.page.register:AlreadyRegistered": {
+        "content": "",
+        "title": "Letusページの登録 `{id}`",
+        "description": "Letusページ(ID:`{id}`)は既にデータベースに存在します。",
+        "color": 13801762,
+        "url": "",
+        "fields": []
+    },
+    "task.page.register:Start": {
+        "content": "",
+        "title": "Letusページの登録 `{id}`",
+        "description": "Letusページ(ID:`{id}`)をデータベースに登録しています。\n登録が完了すると新たなThreadに通知します。",
+        "color": 4176208,
+        "url": "",
+        "fields": []
+    },
+    "task.page.register:Success": {
+        "content": "",
+        "title": "Letusページの登録 `{id}`",
+        "description": "Letusページ(ID:`{id}`)の登録が完了しました。",
+        "color": 4176208,
+        "url": "",
+        "fields": [
+            {
+                "name": "Thread",
+                "value": "{thread_url}",
+                "inline": true
+            }
+        ]
+    },
+    "task.page.register:OnThread": {
+        "content": "",
+        "title": "{title}",
+        "description": "Letusページ(ID:`{id}`)の登録が完了しました。",
+        "color": 4176208,
+        "url": "{url}",
+        "fields": []
+    },
+    "task.page.fetch_loop:Start": {
+        "content": "",
+        "title": "Letusページの監視",
+        "description": "追跡リストに登録されているLetusページの更新を確認しています。",
+        "color": 4176208,
+        "url": "",
+        "fields": [
+            {
+                "name": "count of pages",
+                "value": "{count}件",
+                "inline": true
+            },
+            {
+                "name": "interval",
+                "value": "{interval}分",
+                "inline": true
+            },
+            {
+                "name": "timestamp",
+                "value": "{timestamp}",
+                "inline": true
+            }
+        ]
+    }
+}

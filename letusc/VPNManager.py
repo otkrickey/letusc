@@ -2,18 +2,24 @@ import subprocess
 import threading
 from os import path
 
-from letusc.logger import Log
+from letusc.logger import L
 from letusc.util import env
 
+__all__ = [
+    "VPNManager",
+]
 
-class VPNManager:
-    _logger = Log("VPNManager")
+
+class VPNController:
+    _l = L()
     _is_backed_up = False
     _is_installed = False
     _is_connected = False
     _is_alive = False
 
     def __init__(self, show_cli_log=False):
+        self._l = L(self.__class__.__name__)
+        _l = self._l.gm("__init__")
         # load environment variables
         home = env("HOME")
         host = env("VPN_HOST")
@@ -35,13 +41,13 @@ class VPNManager:
 
     @staticmethod
     def backup_dns():
-        _logger = Log(f"{VPNManager._logger}.backup_dns")
-        _logger_cp = Log("cp.backup_dns", True)
-        _logger.info("Backing up DNS settings")
+        _l = L(VPNController.__name__).gm("backup_dns")
+        _l_cp = L(VPNController.__name__).gm("cp.backup_dns")
+        _l.info("Backing up DNS settings")
         src = "/etc/resolv.conf"
         dst = "/mnt/c/Users/rtkfi/dev/settings/resolv.conf"
         command_cp = ["sudo", "cp", src, dst]
-        if not VPNManager._is_backed_up:
+        if not VPNController._is_backed_up:
             process_cp = subprocess.Popen(
                 command_cp,
                 stdout=subprocess.PIPE,
@@ -53,16 +59,16 @@ class VPNManager:
                 if not line:
                     break
                 line_str = line.decode("utf-8").strip()
-                _logger_cp.debug(line_str)
-            _logger.info("DNS backup file created")
+                _l_cp.debug(line_str)
+            _l.info("DNS backup file created")
         else:
-            _logger.warn("DNS backup file already exists")
+            _l.warn("DNS backup file already exists")
 
     @staticmethod
     def fix_dns():
-        _logger = Log(f"{VPNManager._logger}.fix_dns")
-        _logger_cp = Log("cp.fix_dns", True)
-        _logger.info("Fixing DNS settings")
+        _l = L(VPNController.__name__).gm("fix_dns")
+        _l_cp = L(VPNController.__name__).gm("cp.fix_dns")
+        _l.info("Fixing DNS settings")
         src = "/mnt/c/Users/rtkfi/dev/settings/resolv.conf"
         dst = "/mnt/wsl/resolv.conf"
         command_cp = ["sudo", "cp", src, dst]
@@ -78,16 +84,16 @@ class VPNManager:
                 if not line:
                     break
                 line_str = line.decode("utf-8").strip()
-                _logger_cp.debug(line_str)
-            _logger.info("DNS settings fixed")
+                _l_cp.debug(line_str)
+            _l.info("DNS settings fixed")
         else:
-            _logger.warn("DNS backup file does not exist")
-            _logger.warn("Cannot fix DNS settings, need to reboot")
+            _l.warn("DNS backup file does not exist")
+            _l.warn("Cannot fix DNS settings, need to reboot")
 
     def unzip(self):
-        _logger = Log(f"{VPNManager._logger}.unzip")
-        _logger_Tar = Log("Tar.unzip", self.show_cli_log)
-        _logger.info("Unzipping Cisco VPN client")
+        _l = L(VPNController.__name__).gm("unzip")
+        _l_Tar = L(VPNController.__name__).gm("tar.unzip")
+        _l.info("Unzipping Cisco VPN client")
         command_unzip = [
             "tar",
             "zxf",
@@ -106,14 +112,14 @@ class VPNManager:
             if not line:
                 break
             line_str = line.decode("utf-8").strip()
-            _logger_Tar.debug(line_str)
+            _l_Tar.debug(line_str)
         process_unzip.wait()
 
     def install(self):
-        _logger = Log(f"{VPNManager._logger}.install")
-        _logger_VPN = Log("CiscoVPN.install", self.show_cli_log)
+        _l = L(VPNController.__name__).gm("install")
+        _l_VPN = L(VPNController.__name__).gm("CiscoVPN.install")
         self.unzip()
-        _logger.info("Installing Cisco VPN client")
+        _l.info("Installing Cisco VPN client")
         # install the source
         cwd = f"{self.home}/setting/cisco/{self.cli_version}/vpn"
         command_install = ["yes | sudo ./vpn_install.sh"]
@@ -130,15 +136,15 @@ class VPNManager:
             if not line:
                 break
             line_str = line.decode("utf-8").strip()
-            _logger_VPN.debug(line_str)
+            _l_VPN.debug(line_str)
         process_install.wait()
         self.status()
 
     @staticmethod
     def uninstall():
-        _logger = Log(f"{VPNManager._logger}.uninstall")
-        _logger_rm = Log("rm.uninstall", True)
-        _logger.info("Uninstalling Cisco VPN client")
+        _l = L(VPNController.__name__).gm("uninstall")
+        _l_rm = L(VPNController.__name__).gm("rm.uninstall")
+        _l.info("Uninstalling Cisco VPN client")
         cli_path = "/opt/cisco/"
         command_rm = ["sudo", "rm", "-rf", cli_path]
         if path.exists(cli_path):
@@ -153,15 +159,15 @@ class VPNManager:
                 if not line:
                     break
                 line_str = line.decode("utf-8").strip()
-                _logger_rm.debug(line_str)
-            _logger.info("Cisco VPN client uninstalled")
+                _l_rm.debug(line_str)
+            _l.info("Cisco VPN client uninstalled")
         else:
-            _logger.warn("Cisco VPN client not found")
+            _l.warn("Cisco VPN client not found")
 
     def connect(self):
-        _logger = Log(f"{VPNManager._logger}.connect")
-        _logger_VPN = Log("CiscoVPN.connect", self.show_cli_log)
-        _logger.info("Connecting to VPN")
+        _l = L(VPNController.__name__).gm("connect")
+        _l_VPN = L(VPNController.__name__).gm("CiscoVPN.connect")
+        _l.info("Connecting to VPN")
         connected = False
         failed = False
         errorMessages = []
@@ -171,7 +177,7 @@ class VPNManager:
             "connect",
             self.host,
         ]
-        _logger.info(f"VPN: {' '.join(command_connect)}")
+        _l.info(f"VPN: {' '.join(command_connect)}")
         process_connect = subprocess.Popen(
             command_connect,
             stdout=subprocess.PIPE,
@@ -186,7 +192,7 @@ class VPNManager:
             if not line:
                 break
             line_str = line.decode("utf-8").strip()
-            _logger_VPN.debug(line_str)
+            _l_VPN.debug(line_str)
 
             if ">> Please enter your username and password." in line_str:
                 process_connect.stdin.write(f"{self.user}\n".encode("utf-8"))
@@ -200,20 +206,20 @@ class VPNManager:
                 errorMessages.append(line_str)
         process_connect.wait()
         if connected:
-            _logger.info("Connected to VPN")
+            _l.info("Connected to VPN")
         elif failed:
-            _logger.error("Failed to connect to VPN")
+            _l.error("Failed to connect to VPN")
             for errorMessage in errorMessages:
-                _logger.error(errorMessage)
+                _l.error(errorMessage)
             self.status()
             self.connect()
         else:
-            _logger.warn("Failed to connect to VPN")
+            _l.warn("Failed to connect to VPN")
 
     def disconnect(self):
-        _logger = Log(f"{VPNManager._logger}.disconnect")
-        _logger_VPN = Log("CiscoVPN.disconnect", self.show_cli_log)
-        _logger.info("Disconnecting from VPN")
+        _l = L(VPNController.__name__).gm("disconnect")
+        _l_VPN = L(VPNController.__name__).gm("CiscoVPN.disconnect")
+        _l.info("Disconnecting from VPN")
         command_disconnect = [
             self.cli_path,
             "-s",
@@ -230,14 +236,14 @@ class VPNManager:
             if not line:
                 break
             line_str = line.decode("utf-8").strip()
-            _logger_VPN.debug(line_str)
+            _l_VPN.debug(line_str)
         process_disconnect.wait()
-        _logger.info("Disconnected from VPN")
+        _l.info("Disconnected from VPN")
 
     def status(self):
-        _logger = Log(f"{VPNManager._logger}.status")
-        _logger_VPN = Log("CiscoVPN.status", self.show_cli_log)
-        _logger.info("Checking VPN status")
+        _l = L(VPNController.__name__).gm("status")
+        _l_VPN = L(VPNController.__name__).gm("CiscoVPN.status")
+        _l.info("Checking VPN status")
         is_connected = False
         is_alive = False
         command_status = [
@@ -256,7 +262,7 @@ class VPNManager:
             if not line:
                 break
             line_str = line.decode("utf-8").strip()
-            _logger_VPN.debug(line_str)
+            _l_VPN.debug(line_str)
             if ">> state: Connected" in line_str:
                 is_connected = True
                 is_alive = True
@@ -264,70 +270,67 @@ class VPNManager:
                 is_connected = False
                 is_alive = True
         process_status.wait()
-        VPNManager._is_connected = is_connected
-        _logger.info(f"VPN connected: \33[32m{self._is_connected}\33[0m")
-        VPNManager._is_alive = is_alive
-        _logger.info(f"VPN alive: \33[32m{self._is_alive}\33[0m")
+        VPNController._is_connected = is_connected
+        _l.info(f"VPN connected: \33[32m{self._is_connected}\33[0m")
+        VPNController._is_alive = is_alive
+        _l.info(f"VPN alive: \33[32m{self._is_alive}\33[0m")
 
 
-class VPNController:
+class VPNManager:
+    _l = L()
     _Manager = None
     cv = threading.Condition()
     thread = None
 
     def __init__(self, show_cli_log=False):
-        if VPNController._Manager is None:
-            VPNController._Manager = VPNManager(show_cli_log)
-            if VPNController.thread is None:
-                VPNController.thread = threading.Thread(target=self._status_worker)
-                VPNController.thread.daemon = True
-                VPNController.thread.start()
+        self._l = L(self.__class__.__name__)
+        _l = self._l.gm("__init__")
+        if VPNManager._Manager is None:
+            VPNManager._Manager = VPNController(show_cli_log)
+            if VPNManager.thread is None:
+                VPNManager.thread = threading.Thread(target=self._status_worker)
+                VPNManager.thread.daemon = True
+                VPNManager.thread.start()
 
-        VPNController._Manager.backup_dns()
-        VPNController._Manager.install()
-        VPNController._Manager.connect()
+        VPNManager._Manager.backup_dns()
+        VPNManager._Manager.install()
+        VPNManager._Manager.connect()
 
     def _status_worker(self):
-        _logger = Log("VPNController.status_worker")
-        _logger.info("Starting VPN status worker")
+        _l = L(VPNManager.__name__).gm("status_worker")
+        _l.info("Starting VPN status worker")
         interval = int(env("VPN_STATUS_INTERVAL")) * 60  # minutes to seconds
-        # first check
         self.status()
         while True:
-            with VPNController.cv:
-                _logger.info("Waiting for VPN status worker")
-                VPNController.cv.wait(interval)
-                _logger.info(f"[every {interval} seconds] Checking VPN status")
-                assert VPNController._Manager is not None
-                VPNController._Manager.status()
+            with VPNManager.cv:
+                _l.info("Waiting for VPN status worker")
+                VPNManager.cv.wait(interval)
+                _l.info(f"[every {interval} seconds] Checking VPN status")
+                assert VPNManager._Manager is not None
+                VPNManager._Manager.status()
 
     @staticmethod
     def status():
-        _logger = Log("VPNController.status")
-        _logger.info("Checking VPN status (blocking)")
-        with VPNController.cv:
-            assert VPNController._Manager is not None
-            VPNController._Manager.status()
-            VPNController.cv.notify()
+        _l = L(VPNManager.__name__).gm("status")
+        _l.info("Checking VPN status (blocking)")
+        with VPNManager.cv:
+            assert VPNManager._Manager is not None
+            VPNManager._Manager.status()
+            VPNManager.cv.notify()
 
     @staticmethod
     def connect():
-        _logger = Log("VPNController.connect")
-        _logger.info("Connecting to VPN")
-        with VPNController.cv:
-            assert VPNController._Manager is not None
-            VPNController._Manager.status()
-            if not VPNController._Manager._is_installed:
-                VPNController._Manager.install()
-            if not VPNController._Manager._is_alive:
-                VPNController._Manager.uninstall()
-                VPNController._Manager.fix_dns()
-                VPNController._Manager.install()
-            if not VPNController._Manager._is_connected:
-                VPNController._Manager.connect()
-            VPNController.cv.notify()
-
-
-__all__ = [
-    "VPNController",
-]
+        _l = L(VPNManager.__name__).gm("connect")
+        _l.info("Connecting to VPN")
+        with VPNManager.cv:
+            assert VPNManager._Manager is not None
+            VPNManager._Manager.status()
+            if not VPNManager._Manager._is_installed:
+                VPNManager._Manager.install()
+            if not VPNManager._Manager._is_alive:
+                VPNManager._Manager.uninstall()
+                VPNManager._Manager.fix_dns()
+                VPNManager._Manager.install()
+            if not VPNManager._Manager._is_connected:
+                VPNManager._Manager.connect()
+            VPNManager.cv.notify()

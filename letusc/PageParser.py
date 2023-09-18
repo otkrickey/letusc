@@ -1,249 +1,136 @@
-import re
+from dataclasses import dataclass
 
-import bs4
-import requests
-from bs4 import BeautifulSoup
+from letusc.logger import L
+from letusc.modelv7.account import Account
+from letusc.modelv7.code import PageCode
+from letusc.modelv7.content import Content
+from letusc.modelv7.module import Module
+from letusc.modelv7.page import NewPage, Page
+from letusc.task.discord_task import DiscordChatThread, EmbedBuilder
 
-from letusc.logger import Log
-from letusc.model.account import Account
-from letusc.model.base import BaseDatabase
-from letusc.model.content import Content, NewContent
-from letusc.model.module import Module, NewModule
-from letusc.model.page import NewPage, Page
+__all__ = [
+    "Parser",
+]
 
 
-class PageParser:
-    _logger = Log("PageParser")
+@dataclass
+class Parser:
+    _l = L()
+    page: NewPage
+    _page: Page | None = None
 
-    def __init__(self, account: Account, page_id: str):
-        # prepare session information
-        PageParser._logger.info("Preparing session information")
-        self.account = account
-        self.page = NewPage.from_code(page_id)
-        try:
-            self.page_old = Page.from_code(page_id)
-        except ValueError as e:
-            if str(e) == f"{BaseDatabase._logger}.pull:NotFound":
-                self.page_old = None
-            else:
-                raise e
-        else:
-            self.page.accounts = self.page_old.accounts
-            PageParser._logger.info(
-                f"the `accounts` will be taken over from the old page"
-            )
-        self.contents: dict[str, NewContent] = {}
-        self.modules: dict[str, NewModule] = {}
-        # if not self.account.student_id in self.page.accounts:
-        #     self.page.accounts.append(self.account.student_id)
-        # if not self.account.discord_id in self.page.accounts:
-        #     self.page.accounts.append(self.account.discord_id)
-        if not self.account.Letus.cookies:
-            raise Exception(f"{PageParser._logger}:NoCookies")
-        for cookie in self.account.Letus.cookies:
-            if cookie.year == self.page.year:
-                self.cookie = cookie
-                break
-        else:
-            raise Exception(f"{PageParser._logger}:NoCookies")
+    @classmethod
+    async def create(cls, multi_id: str, code: PageCode) -> "Parser":
+        cls._l = L(cls.__name__)
+        _l = cls._l.gm("get")
+        _account = await Account.pull(multi_id)
+        cookie = _account.get_cookie(code.year)
+        # page, _page = await asyncio.gather(
+        #     NewPage.parse(_code, cookie),
+        #     Page.pull(_code.code),
+        #     return_exceptions=True,
+        # )
+        # if not isinstance(page, NewPage):
+        #     raise page
+        # if not isinstance(_page, Page):
+        #     if L("Page").gm("pull").c("NotFound") in str(_page):
+        #         raise _page
+        #     else:
+        #         raise _page
+        # return cls(page=page, _page=_page)
+        page = await NewPage.parse(code, cookie)
+        return cls(page=page)
 
-    def parse(self):
-        # session
-        self.prepare_session()
-        self.get_session()
+    @classmethod
+    async def from_page(cls, _page: Page) -> "Parser":
+        _l = L(cls.__name__).gm("from_page")
+        _code = PageCode.create(_page.code)
+        account = await Account.pull(_page.accounts[0])
+        cookie = account.get_cookie(_code.year)
+        page = await NewPage.parse(_code, cookie)
+        return cls(page=page, _page=_page)
 
-        # page
-        self.soup = BeautifulSoup(self.response, "html.parser")
-        self.page.parse(self.soup)
-        contents = self.soup.find_all(attrs={"data-for": "section"})
-        if not isinstance(contents, bs4.ResultSet):
-            raise Exception("PageParser.get_main:ContentsIsNotResultSet")
-        for content_el in contents:
-            if not isinstance(content_el, bs4.Tag):
-                raise Exception("PageParser.get_main:ContentIsNotTag")
-            content_type = "section"
-            content_id = content_el.attrs["data-id"]
-            code = f"{self.page.code}:{content_type}:{content_id}"
-            # content = NewContent(code)
-            content = NewContent.from_code(code)
-            content.parse(content_el)
-            content_code_hash = f"{content_type}:{content_id}:{content.hash}"
-            self.page.contents.append(content_code_hash)
-            self.contents.update({f"{content_type}:{content_id}": content})
+    async def compare(self) -> bool:
+        _l = self._l.gm("compare")
+        if not self._page:
+            _l.debug("The page does not exist in the database.")
+            await self._compare(False)
+            # await self.page.push()
+            return True
+        if self.page.hash == self._page.hash:
+            _l.debug("The page has not changed.")
+            return False
+        _l.debug("The page has changed.")
+        await self._compare(True)
+        # await self.page.push()
+        return True
 
-            modules = content_el.find_all(attrs={"data-for": "cmitem"})
-            if not isinstance(modules, bs4.ResultSet):
-                raise Exception("PageParser.get_content:ModulesIsNotResultSet")
-            for module_el in modules:
-                if not isinstance(module_el, bs4.Tag):
-                    raise Exception("PageParser.get_content:ModuleIsNotTag")
-                module_types = module_el.attrs["class"]
-                for module_type in (
-                    [module_types]
-                    if isinstance(module_types, str)
-                    else module_types
-                    if isinstance(module_types, list)
-                    else []
-                ):
-                    if re.match(r"^modtype_", module_type):
-                        module_type = module_type.replace("modtype_", "")
-                        break
-                else:
-                    module_type = "<Error:NoTypeFound>"
-                module_id = module_el.attrs["data-id"]
-                module_code = f"{content.code}:{module_type}:{module_id}"
-                module = NewModule.from_code(module_code)
-                module.parse(module_el)
-                module_code_hash = f"{module_type}:{module_id}:{module.hash}"
-                content.modules.append(module_code_hash)
-                self.modules.update({f"{module_type}:{module_id}": module})
+    async def _compare(self, notify=True, push=True) -> None:
+        _l = self._l.gm("_compare")
+        contents = self.page.contents
+        _contents = self._page.contents if self._page else {}
 
-    def prepare_session(self) -> None:
-        PageParser._logger.info("Preparing session")
-        self.session = requests.Session()
-        self.session.cookies.update({self.cookie.name: self.cookie.value})
-        self.session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
-            }
+        chats = (
+            [
+                await DiscordChatThread.get(channel_id=int(k), thread_id=int(v))
+                for k, v in self._page.chat.items()
+            ]
+            if self._page
+            else []
         )
 
-    def get_session(self) -> None:
-        # access to page
-        PageParser._logger.info(f"Accessing to {self.page.url}")
-        try:
-            response = self.session.get(self.page.url)
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            PageParser._logger.error(f"An HTTP error occurred: {e}")
-            match e.response.status_code:
-                case 404:
-                    raise Exception(f"{PageParser._logger}:NotFound")
-                case 503:
-                    raise Exception(f"{PageParser._logger}:MoodleMaintenance")
-                case _:
-                    raise Exception(f"{PageParser._logger}:UnknownHTTPError")
-        except requests.exceptions.RequestException as e:
-            PageParser._logger.error(f"An error occurred: {e}")
-            raise Exception(f"{PageParser._logger}:UnknownError")
+        for content_key, content in contents.items():
+            if content_key in _contents.keys():
+                if content.hash != _contents[content_key].hash:
+                    builder = EmbedBuilder.from_model(self.page, content, "changed")
+                    _content = await Content.pull(content_key)
 
-        # parse page
-        PageParser._logger.info("Parsing page")
-        self.response = response.text
+                    for module_key, module in content.modules.items():
+                        if module_key in _content.modules.keys():
+                            if module.hash != _content.modules[module_key].hash:
+                                builder.add_field_from_model(module, "changed")
+                                await module.push()
 
-    def compare(self) -> list[dict]:
-        _logger = Log(f"{PageParser._logger}.compare")
+                        else:
+                            builder.add_field_from_model(module, "new")
+                            await module.push()
 
-        # # NOTE:DEBUG
-        for inc, nc in enumerate(self.page.contents):
-            if "1081922" in nc:
-                self.page.contents[
-                    inc
-                ] = "section:1081922:changeddddddddddddddddddddddddddddd"
-            elif "1078139" in nc:
-                self.page.contents.pop(inc)
-        # # NOTE:DEBUG:END
+                    for module_key in _content.modules.keys():
+                        if module_key not in content.modules.keys():
+                            builder.add_field_from_model(
+                                module=await Module.pull(module_key),
+                                status="deleted",
+                            )
 
-        res = []
-        nc_list = self.contents
-        nm_list = self.modules
-        if not self.page_old:
-            _logger.info("No old page found")
-            for nc in nc_list.keys():
-                code = f"{self.page.code}:{nc}"
-                content = {
-                    "code": code,
-                    "status": "new",
-                    "type": "content",
-                    "new": nc_list[nc],
-                    "old": None,
-                    "modules": [],
-                }
-                for nm in nm_list.keys():
-                    if nm_list[nm].content_id == nc_list[nc].content_id:
-                        code = f"{self.page.code}:{nc}:{nm}"
-                        module = {
-                            "code": code,
-                            "status": "new",
-                            "type": "module",
-                            "new": nm_list[nm],
-                            "old": None,
-                        }
-                        content["modules"].append(module)
-                res.append(content)
-            return res
-        oc_list = {}
+                    if notify:
+                        for chat in chats:
+                            await chat.SendFromBuilder(builder)
+                    await content.push()
 
-        for oc in self.page_old.contents:
-            key = ":".join(oc.split(":")[:2])
-            value = oc.split(":")[-1]
-            oc_list.update({key: value})
-        for nc in nc_list.keys():
-            if nc in oc_list.keys():
-                new_modules = []
-                changed_modules = []
-                if nc_list[nc].hash != oc_list[nc]:
-                    code = f"{self.page.code}:{nc}"
-                    content = {
-                        "code": code,
-                        "status": "changed",
-                        "type": "content",
-                        "new": nc_list[nc],
-                        "old": Content.from_code(code),
-                        "modules": [],
-                    }
-                    oc = Content.from_code(nc_list[nc].code)
-                    om_list = {}
-                    for om in oc.modules:
-                        key = ":".join(om.split(":")[:2])
-                        value = om.split(":")[-1]
-                        om_list.update({key: value})
-                    for nm in nm_list.keys():
-                        if nm in om_list.keys():
-                            if nm_list[nm].hash != om_list[nm]:
-                                code = f"{self.page.code}:{nc}:{nm}"
-                                module = {
-                                    "code": code,
-                                    "status": "changed",
-                                    "type": "module",
-                                    "new": nm_list[nm],
-                                    "old": Module.from_code(code),
-                                }
-                                changed_modules.append(module)
-                        elif nm_list[nm].content_id == nc_list[nc].content_id:
-                            code = f"{self.page.code}:{nc}:{nm}"
-                            module = {
-                                "code": code,
-                                "status": "new",
-                                "type": "module",
-                                "new": nm_list[nm],
-                                "old": None,
-                            }
-                            new_modules.append(module)
-                    content["modules"].extend(new_modules)
-                    content["modules"].extend(changed_modules)
-                    res.append(content)
             else:
-                code = f"{self.page.code}:{nc}"
-                content = {
-                    "code": code,
-                    "status": "new",
-                    "type": "content",
-                    "new": nc_list[nc],
-                    "old": None,
-                    "modules": [],
-                }
-                for nm in nm_list.keys():
-                    if nm_list[nm].content_id == nc_list[nc].content_id:
-                        code = f"{self.page.code}:{nc}:{nm}"
-                        module = {
-                            "code": code,
-                            "status": "new",
-                            "type": "module",
-                            "new": nm_list[nm],
-                            "old": None,
-                        }
-                        content["modules"].append(module)
-                res.append(content)
+                builder = EmbedBuilder.from_model(self.page, content, "new")
 
-        return res
+                for module_key, module in content.modules.items():
+                    builder.add_field_from_model(module, "new")
+                    await module.push()
+
+                if notify:
+                    for chat in chats:
+                        await chat.SendFromBuilder(builder)
+                await content.push()
+
+        for content_key in _contents.keys():
+            if content_key not in contents.keys():
+                _content = await Content.pull(content_key)
+                builder = EmbedBuilder.from_model(self.page, _content, "deleted")
+                for module_key in _content.modules.keys():
+                    builder.add_field_from_model(
+                        module=await Module.pull(module_key),
+                        status="deleted",
+                    )
+
+                if notify:
+                    for chat in chats:
+                        await chat.SendFromBuilder(builder)
+
+        _l.info("The page has been updated.")

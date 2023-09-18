@@ -1,15 +1,24 @@
 from dataclasses import dataclass
 
-from letusc.logger import Log
-from letusc.model.account import Account
+from letusc.logger import L
+
+__all__ = [
+    "TaskBase",
+]
 
 
 @dataclass
-class BaseTask(Account):
-    _logger = Log("Task.BaseTask")
-    # [must]
+class TaskBase:
+    _l = L()
     task: str
-    multi_id: str
 
-    def run(self):
-        raise NotImplementedError(f"{BaseTask._logger}.run:NotImplemented")
+    def __post_init__(self):
+        self._l = L(self.__class__.__name__)
+        _l = self._l.gm("__post_init__")
+
+    @staticmethod
+    async def from_api(task: dict) -> "TaskBase":
+        ...
+
+    async def run(self):
+        ...
