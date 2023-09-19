@@ -1,5 +1,9 @@
 import difflib
 
+__all__ = [
+    "diff_texts",
+]
+
 
 def diff_texts(text1, text2) -> list[str]:
     d = difflib.Differ()
