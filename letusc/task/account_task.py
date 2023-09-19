@@ -7,7 +7,7 @@ from letusc.modelv7.discord import DiscordUser, DiscordUserAny
 from letusc.modelv7.letus import LetusUserWithPassword
 
 from .base_task import TaskBase
-from .discord_task import DiscordChatUser
+from ..chat import DiscordChatUser
 
 __all__ = [
     "AccountTaskBase",

@@ -5,9 +5,14 @@ from discord.ext import commands, tasks
 
 from letusc.logger import L
 from letusc.MongoManager import MongoManager
-from letusc.task.discord_task import DiscordChatChannel, DiscordChatThread, EmbedBuilder
 from letusc.task.page_task import FetchPageLoopTask
 from letusc.util import env
+
+from ..chat import DiscordChatThread, EmbedBuilder
+
+__all__ = [
+    "Task",
+]
 
 
 class Task(commands.Cog):

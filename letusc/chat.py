@@ -15,7 +15,7 @@ from letusc.modelv7.module import ModuleBase
 from letusc.modelv7.page import PageBase
 from letusc.URLManager import URLManager
 
-from ..bot import LetusBotClient
+from .bot import LetusBotClient
 
 __all__ = [
     "status_",

@@ -1,8 +1,8 @@
 import discord
 from discord import SlashCommandGroup, option
 from discord.ext import commands
-from letusc.logger import L
 
+from letusc.logger import L
 from letusc.task.account_task import RegisterAccountTask
 from letusc.TaskManager import TaskManager
 from letusc.util import env, env_any

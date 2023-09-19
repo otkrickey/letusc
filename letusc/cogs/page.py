@@ -4,9 +4,10 @@ from discord.ext import commands
 
 from letusc.logger import L
 from letusc.modelv7.code import PageCode
-from letusc.task.discord_task import DiscordChat
 from letusc.task.page_task import FetchPageTask, RegisterPageTask
 from letusc.util import env, env_any
+
+from ..chat import DiscordChat
 
 __all__ = [
     "Page",

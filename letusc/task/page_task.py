@@ -10,7 +10,7 @@ from letusc.PageParser import Parser
 from letusc.util import env
 
 from .base_task import TaskBase
-from .discord_task import (
+from ..chat import (
     DiscordChat,
     DiscordChatChannel,
     DiscordChatThread,

@@ -6,7 +6,8 @@ from letusc.modelv7.code import PageCode
 from letusc.modelv7.content import Content
 from letusc.modelv7.module import Module
 from letusc.modelv7.page import NewPage, Page
-from letusc.task.discord_task import DiscordChatThread, EmbedBuilder
+
+from .chat import DiscordChatThread, EmbedBuilder
 
 __all__ = [
     "Parser",
