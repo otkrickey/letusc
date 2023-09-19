@@ -1,44 +1,40 @@
-import signal
-from queue import Queue
-
-from letusc.discord import run_bot
-from letusc.TaskManager import Keys, TaskConfig, TaskManager
-from letusc.test import test
-from letusc.test.post_test import post_test
+from letusc.discord import LetusClient
+from letusc.discord.cogs import Account, Page
+from letusc.discord.cogs.task import Task
+from letusc.logger import L
+from letusc.TaskManager import TaskManager
+from letusc.test.post_test import async_post_test
+from letusc.test.test import test
 from letusc.util import env_bool
-from letusc.VPNManager import VPNController
-from letusc.watcher.db_watcher import accountWatcher, contentWatcher
-from letusc.worker.db_worker import accountWorker, contentWorker
-from letusc.worker.discord_worker import discordWorker
+from letusc.VPNManager import VPNManager
 
 
-def main(TM: TaskManager):
+def async_main():
+    _l = L("main").gm("async_main")
     is_test = env_bool("TEST")
     if is_test:
         test()
     else:
-        VC = VPNController()
+        VC = VPNManager()
         VC.connect()
 
-    task_configs = [
-        TaskConfig(Keys.account, Queue(), accountWatcher, accountWorker),
-        TaskConfig(Keys.content, Queue(), contentWatcher, contentWorker),
-        TaskConfig(Keys.discord, Queue(), run_bot, discordWorker),
-    ]
-    TM.configure(task_configs)
-    TM.start()
+    # initialize managers
+    manager = TaskManager()
+    client = LetusClient()
+    loop = manager.get_loop()
+
+    client.add_cogMeta(Account)
+    client.add_cogMeta(Page)
+    client.add_cogMeta(Task)
+
+    # loop.create_task(accountWatcher())
+    loop.create_task(client.run_bot())
 
     if is_test:
-        post_test()
+        loop.create_task(async_post_test())
+
+    manager.start()
 
 
 if __name__ == "__main__":
-    TM = TaskManager()
-    try:
-        main(TM)
-        while True:
-            pass
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt")
-        signal.signal(signal.SIGINT, TM.stop)
-        exit(0)
+    async_main()

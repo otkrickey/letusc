@@ -1,68 +1,49 @@
-from dataclasses import dataclass
-from enum import Enum
-from queue import Queue
-from threading import Event, Thread
-from typing import Callable
+import asyncio
 
-from letusc.logger import Log
+from letusc.logger import L
 
-
-class Keys(Enum):
-    account = "account"
-    content = "content"
-    discord = "discord"
-
-
-@dataclass
-class TaskConfig:
-    key: Keys
-    queue: Queue
-    watcher: Callable[[Queue, Event], None]
-    worker: Callable[[Queue, Event], None]
+__all__ = [
+    "TaskManager",
+]
 
 
 class TaskManager:
-    _logger = Log("TaskManager")
+    _l = L()
     _instance: "TaskManager"
-    queue: dict[Keys, Queue] = {}
-    watcher: dict[Keys, Thread] = {}
-    worker: dict[Keys, Thread] = {}
-    exit_event = Event()
+    _loop = asyncio.get_event_loop()
+    _exit_event = asyncio.Event()
 
     def __new__(cls) -> "TaskManager":
         if not hasattr(cls, "_instance"):
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def configure(self, configs: list["TaskConfig"]) -> None:
-        for c in configs:
-            args = (c.queue, self.exit_event)
-            watcher_thread = Thread(target=c.watcher, args=args, daemon=True)
-            worker_thread = Thread(target=c.worker, args=args, daemon=True)
-            self.queue.update({c.key: c.queue})
-            self.watcher.update({c.key: watcher_thread})
-            self.worker.update({c.key: worker_thread})
+    def __init__(self):
+        self._l = L(self.__class__.__name__)
+        _l = self._l.gm("__init__")
+        _l.info("TaskManager initialized")
 
     def start(self):
-        _logger = Log(f"{TaskManager._logger}.start")
-        _logger.info("Starting watchers and workers")
-        for watcher in self.watcher.values():
-            watcher.start()
-        for worker in self.worker.values():
-            worker.start()
+        _l = self._l.gm("start")
+        try:
+            self._loop.run_forever()
+        except KeyboardInterrupt:
+            _l.info("KeyboardInterrupt")
+        finally:
+            self._exit_event.set()
+            pending = asyncio.all_tasks(loop=self._loop)
+            try:
+                self._loop.run_until_complete(asyncio.gather(*pending))
+            except asyncio.CancelledError as e:
+                _l.info(f"CancelledError: {e}")
+            self._loop.close()
 
-    def stop(self, signum, frame):
-        _logger = Log(f"{TaskManager._logger}.stop")
-        _logger.info("Stopping watchers and workers")
-        self.exit_event.set()
+    @classmethod
+    def get_loop(cls) -> asyncio.AbstractEventLoop:
+        _l = L(cls.__name__).gm("get_loop")
+        return cls._loop
 
     @staticmethod
-    def get_queue(key: Keys) -> Queue:
-        queue = TaskManager.queue.get(key)
-        assert queue is not None
-        return queue
-
-
-__all__ = [
-    "TaskManager",
-]
+    def get_exit_event() -> asyncio.Event:
+        _l = L(TaskManager.__name__).gm("get_exit_event")
+        return TaskManager._exit_event

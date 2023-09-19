@@ -49,7 +49,6 @@ def tag_filter(soup, additional_tags=None) -> str | None:
             element.unwrap()
     soup = BeautifulSoup(str(soup), "html.parser")
     return soup.get_text(separator="\n")
-    # return soup.get_text()
 
 
 def text_filter(text, hash=True, pretty=2, no_script=True):
