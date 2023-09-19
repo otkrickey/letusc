@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 from ..db import DBManager
 from ..logger import L
 from ..session import SessionManager
-from ..util import env_bool
 from .base import (
     BaseDatabase,
     BaseModel,
@@ -150,13 +149,6 @@ class PageBase(PageCode, BaseDatabase, BaseModel):
                 html = await response.text()
                 return BeautifulSoup(html, "html.parser")
 
-    async def get_local(self) -> bs4.BeautifulSoup:
-        _l = self._l.gm("get_local")
-        _l.info(f"Requesting page: {self.url}")
-        with open(f"{self.page_id}.example.html", "r") as f:
-            html = f.read()
-            return BeautifulSoup(html, "html.parser")
-
 
 @dataclass
 class Page(PageBase):
@@ -233,9 +225,7 @@ class NewPage(PageParser, PageBase):
                 page = NewCoursePage(code.code)
             case _:
                 raise ValueError(_l.c("UnknownPageType"))
-        soup = (
-            await page.get_local() if env_bool("USE_LOCAL") else await page.get(cookie)
-        )
+        soup = await page.get(cookie)
         await page._parse(soup)
         return page
 
