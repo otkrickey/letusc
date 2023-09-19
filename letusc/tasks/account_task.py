@@ -1,13 +1,12 @@
 from dataclasses import dataclass, field
 
-from letusc.Authenticator import Authenticator
-from letusc.logger import L
-from letusc.modelv7.account import Account, NewAccount
-from letusc.modelv7.discord import DiscordUser, DiscordUserAny
-from letusc.modelv7.letus import LetusUserWithPassword
-
-from .base_task import TaskBase
+from ..authenticator import Authenticator
 from ..chat import DiscordChatUser
+from ..logger import L
+from ..models.account import Account, NewAccount
+from ..models.discord import DiscordUser, DiscordUserAny
+from ..models.letus import LetusUserWithPassword
+from .base_task import TaskBase
 
 __all__ = [
     "AccountTaskBase",

@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 
-from letusc.logger import L
-
+from ..logger import L
 from .base import BaseModel, attrs, from_api_attrs, to_api_attrs, types
 
 __all__ = [

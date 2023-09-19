@@ -1,12 +1,10 @@
-import code
 import re
 from dataclasses import dataclass, field
 
 import bs4
 
-from letusc.logger import L
-from letusc.URLManager import URLManager
-
+from ..logger import L
+from ..url import URLManager
 from .base import BaseModel, attrs, from_api_attrs, to_api_attrs, types
 
 __all__ = [

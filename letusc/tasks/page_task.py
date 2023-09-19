@@ -3,19 +3,13 @@ from dataclasses import dataclass, field
 import discord
 from discord.ui import Button, View
 
-from letusc.logger import L
-from letusc.modelv7.code import PageCode
-from letusc.modelv7.page import Page
-from letusc.PageParser import Parser
-from letusc.util import env
-
+from ..chat import DiscordChat, DiscordChatChannel, DiscordChatThread, EmbedBuilder
+from ..logger import L
+from ..models.code import PageCode
+from ..models.page import Page
+from ..parser import Parser
+from ..util import env
 from .base_task import TaskBase
-from ..chat import (
-    DiscordChat,
-    DiscordChatChannel,
-    DiscordChatThread,
-    EmbedBuilder,
-)
 
 __all__ = [
     "RegisterPageView",

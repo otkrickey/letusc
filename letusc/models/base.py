@@ -8,7 +8,7 @@ import bs4
 from bs4 import BeautifulSoup
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from letusc.logger import L
+from ..logger import L
 
 __all__ = [
     "attr_",

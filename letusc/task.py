@@ -1,6 +1,6 @@
 import asyncio
 
-from letusc.logger import L
+from .logger import L
 
 __all__ = [
     "TaskManager",

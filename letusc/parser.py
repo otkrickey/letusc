@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 
-from letusc.logger import L
-from letusc.modelv7.account import Account
-from letusc.modelv7.code import PageCode
-from letusc.modelv7.content import Content
-from letusc.modelv7.module import Module
-from letusc.modelv7.page import NewPage, Page
-
 from .chat import DiscordChatThread, EmbedBuilder
+from .logger import L
+from .models.account import Account
+from .models.code import PageCode
+from .models.content import Content
+from .models.module import Module
+from .models.page import NewPage, Page
 
 __all__ = [
     "Parser",

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 
 from letusc.logger import L
-from letusc.MongoManager import MongoManager
 
+from ..db import DBManager
 from .base import BaseDatabase, BaseModel, attrs, from_api_attrs, to_api_attrs, types
 from .cookie import Cookie
 from .discord import DiscordUser, DiscordUserAny, DiscordUserBase
@@ -50,7 +50,7 @@ class AccountBase(BaseDatabase, BaseModel):
     )
 
     multi_id: str
-    collection = MongoManager.get_collection("letus", "accounts")
+    collection = DBManager.get_collection("letus", "accounts")
 
     student_id: str = field(init=False)
     discord_id: str = field(init=False)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from letusc.logger import L
+from ..logger import L
 
 __all__ = [
     "TaskBase",

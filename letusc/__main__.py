@@ -1,10 +1,9 @@
-from letusc.cogs import Account, Page, Task
-from letusc.logger import L
-from letusc.TaskManager import TaskManager
-from letusc.util import env_bool
-from letusc.VPNManager import VPNManager
-
 from .bot import LetusBotClient
+from .cogs import Account, Page, Task
+from .logger import L
+from .task import TaskManager
+from .util import env_bool
+from .vpn import VPNManager
 
 
 def main():

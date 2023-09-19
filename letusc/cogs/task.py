@@ -3,12 +3,11 @@ from datetime import datetime
 import discord
 from discord.ext import commands, tasks
 
-from letusc.logger import L
-from letusc.MongoManager import MongoManager
-from letusc.task.page_task import FetchPageLoopTask
-from letusc.util import env
-
 from ..chat import DiscordChatThread, EmbedBuilder
+from ..db import DBManager
+from ..logger import L
+from ..tasks.page_task import FetchPageLoopTask
+from ..util import env
 
 __all__ = [
     "Task",
@@ -31,7 +30,7 @@ class Task(commands.Cog):
     async def fetchAll(self):
         _l = self._l.gm("fetchAll")
         _l.info("task started")
-        collection = MongoManager.get_collection("letus", "pages")
+        collection = DBManager.get_collection("letus", "pages")
         cursor = collection.find({})
 
         count = 0

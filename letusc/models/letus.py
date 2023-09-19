@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
 
-from letusc.logger import L
-from letusc.util import env
-
+from ..logger import L
+from ..util import env
 from .base import BaseModel, attrs, to_api_attrs, types
 from .cookie import Cookie
 

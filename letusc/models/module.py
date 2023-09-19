@@ -4,9 +4,8 @@ from datetime import datetime
 
 import bs4
 
-from letusc.logger import L
-from letusc.MongoManager import MongoManager
-
+from ..db import DBManager
+from ..logger import L
 from .base import (
     BaseDatabase,
     BaseModel,
@@ -100,7 +99,7 @@ class ModuleBase(ModuleCode, BaseDatabase, BaseModel):
         )
     )
 
-    collection = MongoManager.get_collection("letus", "modules")
+    collection = DBManager.get_collection("letus", "modules")
     code: str
 
     title: str = field(init=False)

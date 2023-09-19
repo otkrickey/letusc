@@ -2,12 +2,11 @@ import discord
 from discord import SlashCommandGroup, option
 from discord.ext import commands
 
-from letusc.logger import L
-from letusc.modelv7.code import PageCode
-from letusc.task.page_task import FetchPageTask, RegisterPageTask
-from letusc.util import env, env_any
-
 from ..chat import DiscordChat
+from ..logger import L
+from ..models.code import PageCode
+from ..tasks.page_task import FetchPageTask, RegisterPageTask
+from ..util import env, env_any
 
 __all__ = [
     "Page",

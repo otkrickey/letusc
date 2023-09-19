@@ -3,6 +3,12 @@ from os import environ, path
 from dotenv import load_dotenv
 
 
+__all__ = [
+    "env",
+    "env_bool",
+]
+
+
 def env_any(key: str) -> str | None:
     load_dotenv(verbose=True)
     dotenv_path = path.abspath(path.join(path.dirname(__file__), "../../.env"))
@@ -28,9 +34,3 @@ def env_bool(key: str) -> bool:
     if res in true_list:
         return True
     return False
-
-
-__all__ = [
-    "env",
-    "env_bool",
-]

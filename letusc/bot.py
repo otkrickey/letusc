@@ -4,9 +4,9 @@ from typing import Any
 import discord
 from discord.ext import commands
 
-from letusc.logger import L
-from letusc.TaskManager import TaskManager
-from letusc.util import env
+from .logger import L
+from .task import TaskManager
+from .util import env
 
 
 class LetusBotClient(commands.Bot):

@@ -9,13 +9,12 @@ from discord import Embed, EmbedField, TextChannel, Thread, User
 from discord.abc import Messageable
 from discord.ui import View
 
-from letusc.logger import L
-from letusc.modelv7.content import ContentBase
-from letusc.modelv7.module import ModuleBase
-from letusc.modelv7.page import PageBase
-from letusc.URLManager import URLManager
-
 from .bot import LetusBotClient
+from .logger import L
+from .models.content import ContentBase
+from .models.module import ModuleBase
+from .models.page import PageBase
+from .url import URLManager
 
 __all__ = [
     "status_",

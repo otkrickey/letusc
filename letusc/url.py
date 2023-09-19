@@ -1,5 +1,5 @@
-from letusc.logger import L
-from letusc.util import env
+from .logger import L
+from .util import env
 
 __all__ = [
     "URLManager",

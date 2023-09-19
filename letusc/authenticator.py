@@ -6,13 +6,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from letusc.logger import L
-from letusc.modelv7.account import AccountBase
-from letusc.modelv7.cookie import Cookie
-from letusc.modelv7.letus import LetusUser, LetusUserWithCookies
-from letusc.TaskManager import TaskManager
-from letusc.URLManager import URLManager
-from letusc.util import env
+from .logger import L
+from .models.account import AccountBase
+from .models.cookie import Cookie
+from .models.letus import LetusUser, LetusUserWithCookies
+from .task import TaskManager
+from .url import URLManager
+from .util import env
 
 __all__ = [
     "Authenticator",

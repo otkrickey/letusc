@@ -5,11 +5,10 @@ import bs4
 from aiohttp import ClientResponseError
 from bs4 import BeautifulSoup
 
-from letusc.logger import L
-from letusc.MongoManager import MongoManager
-from letusc.SessionManager import SessionManager
-from letusc.util import env_bool, strs2list
-
+from ..db import DBManager
+from ..logger import L
+from ..session import SessionManager
+from ..util import env_bool
 from .base import (
     BaseDatabase,
     BaseModel,
@@ -69,7 +68,7 @@ class PageBase(PageCode, BaseDatabase, BaseModel):
         | PageCode._from_api_attrs
         | from_api_attrs(
             [
-                ("accounts", list, lambda obj: strs2list(obj["accounts"])),
+                ("accounts", list, lambda obj: obj["accounts"]),
                 (
                     "chat",
                     dict[str, str],
@@ -110,7 +109,7 @@ class PageBase(PageCode, BaseDatabase, BaseModel):
         )
     )
 
-    collection = MongoManager.get_collection("letus", "pages")
+    collection = DBManager.get_collection("letus", "pages")
     code: str
 
     accounts: list[str] = field(init=False, default_factory=list)

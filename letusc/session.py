@@ -1,7 +1,7 @@
 from aiohttp import ClientSession
-from letusc.TaskManager import TaskManager
-from letusc.logger import L
 
+from .logger import L
+from .task import TaskManager
 
 __all__ = [
     "SessionManager",
