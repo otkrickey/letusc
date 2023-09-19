@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
 
-from letusc.logger import L
-
 from ..db import DBManager
+from ..logger import L
 from .base import BaseDatabase, BaseModel, attrs, from_api_attrs, to_api_attrs, types
 from .cookie import Cookie
 from .discord import DiscordUser, DiscordUserAny, DiscordUserBase
