@@ -213,10 +213,10 @@ class FetchPageLoopTask(PageTaskBase):
         self._l = L(self.__class__.__name__)
         _l = self._l.gm("__post_init__")
 
-    @classmethod
-    async def from_api(cls, task: dict) -> "FetchPageLoopTask":
-        _l = L(cls.__name__).gm("from_api")
-        return cls(multi_id=task["discord_id"], code=PageCode.create(task["code"]))
+    # @classmethod
+    # async def from_api(cls, task: dict) -> "FetchPageLoopTask":
+    #     _l = L(cls.__name__).gm("from_api")
+    #     return cls(multi_id=task["discord_id"], code=PageCode.create(task["code"]))
 
     @classmethod
     async def create(cls, object: dict):
@@ -243,6 +243,30 @@ class FetchPageLoopTask(PageTaskBase):
 
         parser = await Parser.from_page(_page)
         push = await parser.compare()
+
+        if len(_page.chat) == 0:
+            _l.warn("No chat bound to the page")
+            pairs: list[tuple[str, str]] = [
+                ("126936", "1152968855434571867"),
+                ("163437", "1152969064214438030"),
+                ("163553", "1152969125648412792"),
+                ("164484", "1152969427390845029"),
+                ("164486", "1152969614742011995"),
+                ("164493", "1152969663542734879"),
+                ("164503", "1152969706328834138"),
+                ("164505", "1152969770560393287"),
+                ("164512", "1152969809181544580"),
+                ("164519", "1152969835488219276"),
+                ("173694", "1152969890475548682"),
+                ("173522", "1152970007119155302"),
+                ("173491", "1152970071770157087"),
+                ("173391", "1152970144260300891"),
+                ("172880", "1152970218252009502"),
+            ]
+            for page_id, thread_id in pairs:
+                if page_id == self.code.page_id:
+                    _page.chat.update({env("DEFAULT_CHANNEL"): thread_id})
+            push = True
 
         parser.page.chat = _page.chat
         parser.page.accounts = _page.accounts

@@ -83,5 +83,13 @@
                 "inline": true
             }
         ]
+    },
+    "task.account.registered": {
+        "content": "",
+        "title": "アカウントの登録",
+        "description": "アカウントの登録が完了しました。",
+        "color": 4176208,
+        "url": "",
+        "fields": []
     }
 }
