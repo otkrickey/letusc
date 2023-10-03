@@ -105,3 +105,32 @@ class LoginAccountTask(AccountTaskBase):
         account = Account(self.multi_id)
         # _SessionManager(account).login()
         # account.push()
+
+
+@dataclass
+class RegisterAccountLoopTask(AccountTaskBase):
+    _l = L()
+    task: str = field(init=False, default="account:register")
+    account: Account
+
+    def __post_init__(self):
+        self._l = L(self.__class__.__name__)
+        _l = self._l.gm("__post_init__")
+
+    @classmethod
+    async def create(cls, object: dict):
+        _l = L(cls.__name__).gm("create")
+        account = Account(object["student_id"])
+        account.from_api(object)
+        return cls(
+            account=account,
+        )
+
+    async def run(self):
+        _l = self._l.gm("run")
+        _l.info("Registering account")
+
+        await Authenticator(self.account).register()
+        await self.account.push()
+        chat = await DiscordChatUser.get(int(self.account.discord_id))
+        await chat.SendMessage("Letusにログインしました。")
