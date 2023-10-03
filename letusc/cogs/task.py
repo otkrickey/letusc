@@ -25,8 +25,8 @@ class Task(commands.Cog):
         _l = self._l.gm("__init__")
         self.bot = bot_
         self.cookie_ready = asyncio.Event()
-        self.checkAllAccount.start()
         self.fetchAll.start()
+        self.checkAllAccount.start()
 
     def cog_unload(self):
         self.fetchAll.cancel()
