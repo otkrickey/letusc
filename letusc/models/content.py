@@ -4,7 +4,7 @@ from datetime import datetime
 import bs4
 
 from ..db import DBManager
-from ..logger import L
+from ..logger import get_logger
 from .base import (
     BaseDatabase,
     BaseModel,
@@ -16,6 +16,8 @@ from .base import (
 )
 from .code import ContentCode, ContentHashCode, ModuleHashCode, PageCode
 from .module import NewModule
+
+logger = get_logger(__name__)
 
 __all__ = [
     "ContentBase",
@@ -29,7 +31,6 @@ __all__ = [
 
 @dataclass
 class ContentBase(ContentCode, BaseDatabase, BaseModel):
-    _l = L()
     _attrs = (
         BaseModel._attrs
         | ContentCode._attrs
@@ -106,51 +107,37 @@ class ContentBase(ContentCode, BaseDatabase, BaseModel):
     def __post_init__(self):
         BaseModel.__post_init__(self)
         ContentCode.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class Content(ContentBase):
-    _l = L()
-
     def __post_init__(self):
         ContentBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def pull(cls, code: str) -> "Content":
-        _l = L(cls.__name__).gm("pull")
         _code = ContentCode.create(code)
         match _code.content_type:
             case "section":
                 content = SectionContent(code=code)
             case _:
-                raise ValueError(_l.c("UnknownContentType"))
+                raise ValueError(logger.c("UnknownContentType"))
         content.from_api(await content._pull())
         return content
 
 
 @dataclass
 class SectionContent(Content):
-    _l = L()
-
     def __post_init__(self):
         Content.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class ContentParser(BaseParser, ContentBase):
-    _l = L()
-
     # modules: list[NewModule] = field(init=False, default_factory=list)
     modules: dict[str, NewModule] = field(init=False, default_factory=dict)
 
     async def _parse(self, tag: bs4.Tag) -> None:
-        _l = self._l.gm("_parse")
         self.title = self._get_title(
             tag.find("h3", attrs={"data-for": "section_title"})
         )
@@ -169,33 +156,24 @@ class ContentParser(BaseParser, ContentBase):
 
 @dataclass
 class NewContent(ContentParser, ContentHashCode, ContentBase):
-    _l = L()
-
     def __post_init__(self):
         ContentBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def parse(cls, code: PageCode, tag) -> "NewContent":
-        _l = L(cls.__name__).gm("parse")
         if not isinstance(tag, bs4.Tag):
-            raise ValueError(_l.c("InvalidContentTag"))
+            raise ValueError(logger.c("InvalidContentTag"))
         _code = code.createContentCode(tag)
         match _code.content_type:
             case "section":
                 content = NewSectionContent(str(_code))
             case _:
-                raise ValueError(_l.c("UnknownContentType"))
+                raise ValueError(logger.c("UnknownContentType"))
         await content._parse(tag)
         return content
 
 
 @dataclass
 class NewSectionContent(NewContent):
-    _l = L()
-
     def __post_init__(self):
         NewContent.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")

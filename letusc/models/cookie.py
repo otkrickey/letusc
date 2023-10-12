@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 
-from ..logger import L
+from ..logger import get_logger
 from .base import BaseModel, attrs, from_api_attrs, to_api_attrs, types
+
+logger = get_logger(__name__)
 
 __all__ = [
     "Cookie",
@@ -10,7 +12,6 @@ __all__ = [
 
 @dataclass
 class Cookie(BaseModel):
-    _l = L()
     _attrs = BaseModel._attrs | attrs(["name", "value", "year", "domain"])
     _types = BaseModel._types | types(
         [
@@ -42,8 +43,6 @@ class Cookie(BaseModel):
 
     def __post_init__(self):
         BaseModel.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
         self.domain = "letus.ed.tus.ac.jp"  # TODO: `{host}/{year}`
         self.key_name = "value"
         self.key = self.value

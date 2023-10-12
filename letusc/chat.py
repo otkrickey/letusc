@@ -10,11 +10,13 @@ from discord.abc import Messageable
 from discord.ui import View
 
 from .bot import LetusBotClient
-from .logger import L
+from .logger import get_logger
 from .models.content import ContentBase
 from .models.module import ModuleBase
 from .models.page import PageBase
 from .url import URLManager
+
+logger = get_logger(__name__)
 
 __all__ = [
     "status_",
@@ -35,13 +37,9 @@ with open(
 
 
 class EmbedBuilder(Embed):
-    _l = L()
-
     def __init__(self, *args, **kwargs):
         self._content: str | None = kwargs.pop("_content", None)
         super().__init__(*args, **kwargs)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
         self.set_footer(
             text="letusc - Letus Scraper",
             icon_url=URLManager.icon,
@@ -56,7 +54,6 @@ class EmbedBuilder(Embed):
 
     @staticmethod
     def _get_color(status: status_) -> int:
-        _l = L(EmbedBuilder.__name__).gm("_get_color")
         match status:
             case "new":
                 return 0x3FB950
@@ -67,7 +64,6 @@ class EmbedBuilder(Embed):
 
     @staticmethod
     def _get_status(status: status_) -> str:
-        _l = L(EmbedBuilder.__name__).gm("_get_status")
         match status:
             case "new":
                 return "追加"
@@ -80,7 +76,6 @@ class EmbedBuilder(Embed):
     def from_model(
         cls, page: PageBase, content: ContentBase, status: status_
     ) -> "EmbedBuilder":
-        _l = L(cls.__name__).gm("from_model")
         return cls(
             _content=f"{page.title}「{content.title}」({page.code})が{cls._get_status(status)}されました！",
             title=content.title,
@@ -92,7 +87,6 @@ class EmbedBuilder(Embed):
 
     @classmethod
     def from_json(cls, key: str, **kwargs) -> "EmbedBuilder":
-        _l = L(cls.__name__).gm("from_json")
         try:
             setting = settings.get(key)
             setting_str = json.dumps(setting)
@@ -116,10 +110,9 @@ class EmbedBuilder(Embed):
                 ],
             )
         except Exception as e:
-            raise ValueError(_l.c("InvalidArgument")) from e
+            raise ValueError(logger.c("InvalidArgument")) from e
 
     def add_field_from_model(self, module: ModuleBase, status: status_):
-        _l = self._l.gm("add_field_from_model")
         code = f"`{module.module_type}:{module.module_id}`"
         self.add_field(
             name=f"[{module.module_type}] {module.title} ({status}!)",
@@ -130,15 +123,10 @@ class EmbedBuilder(Embed):
 
 @dataclass
 class DiscordChat:
-    _l = L()
     chat: Messageable
     user_id: int | None = None
     channel_id: int | None = None
     thread_id: int | None = None
-
-    def __post_init__(self):
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def get(
@@ -147,25 +135,21 @@ class DiscordChat:
         channel_id: int | None = None,
         thread_id: int | None = None,
     ) -> "DiscordChat":
-        _l = L(cls.__name__).gm("get")
         if user_id:
             return await DiscordChatUser.get(user_id)
         if channel_id and not thread_id:
             return await DiscordChatChannel.get(channel_id)
         if channel_id and thread_id:
             return await DiscordChatThread.get(channel_id, thread_id)
-        raise ValueError(_l.c("InvalidArgument"))
+        raise ValueError(logger.c("InvalidArgument"))
 
     async def SendMessage(self, content: str):
-        _l = self._l.gm("SendMessage")
         await self.chat.send(content)
 
     async def SendEmbedMessage(self, content: str | None, embed: Embed):
-        _l = self._l.gm("SendEmbedMessage")
         await self.chat.send(content, embed=embed)
 
     async def SendFromBuilder(self, builder: EmbedBuilder, view: View | None = None):
-        _l = self._l.gm("SendFromBuilder")
         if view:
             await self.chat.send(content=builder._content, embed=builder, view=view)
         else:
@@ -173,7 +157,6 @@ class DiscordChat:
 
     @classmethod
     async def getByID(cls, id: int) -> "DiscordChat":
-        _l = L(cls.__name__).gm("getByID")
         client = await LetusBotClient.get_client()
         chat = client.get_channel(id)
         if not chat:
@@ -184,87 +167,64 @@ class DiscordChat:
             return DiscordChatChannel(chat)
         if isinstance(chat, Thread):
             return DiscordChatThread(chat)
-        raise ValueError(_l.c("ChatNotFound"))
+        raise ValueError(logger.c("ChatNotFound"))
 
     @classmethod
     async def getByCTX(cls, ctx) -> "DiscordChat":
-        _l = L(cls.__name__).gm("getByCTX")
         _ = await cls.getByID(ctx.interaction.channel_id)
         setattr(_, "ctx", ctx)
         return _
 
     def getCTX(self) -> discord.ApplicationContext | None:
-        _l = self._l.gm("getCTX")
         return getattr(self, "ctx", None)
 
 
 @dataclass
 class DiscordChatUser(DiscordChat):
-    _l = L()
     chat: User
     user_id: int
     channel_id = None
     thread_id = None
 
-    def __post_init__(self):
-        DiscordChat.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
-
     @classmethod
     async def get(cls, user_id: int) -> "DiscordChatUser":
-        _l = L(cls.__name__).gm("get")
         client = await LetusBotClient.get_client()
         user = client.get_user(user_id)
         if not isinstance(user, User):
-            raise ValueError(_l.c("UserNotFound"))
+            raise ValueError(logger.c("UserNotFound"))
         return cls(chat=user, user_id=user_id)
 
 
 @dataclass
 class DiscordChatChannel(DiscordChat):
-    _l = L()
     chat: TextChannel
     user_id = None
     channel_id: int
     thread_id = None
 
-    def __post_init__(self):
-        DiscordChat.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
-
     @classmethod
     async def get(cls, channel_id: int) -> "DiscordChatChannel":
-        _l = L(cls.__name__).gm("get")
         client = await LetusBotClient.get_client()
         channel = client.get_channel(channel_id)
         if not isinstance(channel, TextChannel):
-            raise ValueError(_l.c("ChannelNotFound"))
+            raise ValueError(logger.c("ChannelNotFound"))
         return cls(chat=channel, channel_id=channel_id)
 
 
 @dataclass
 class DiscordChatThread(DiscordChat):
-    _l = L()
     chat: Thread
     user_id = None
     channel_id: int
     thread_id: int
 
-    def __post_init__(self):
-        DiscordChat.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
-
     @classmethod
     async def get(cls, channel_id: int, thread_id: int) -> "DiscordChatThread":
-        _l = L(cls.__name__).gm("get")
         client = await LetusBotClient.get_client()
         channel = client.get_channel(channel_id)
         if not isinstance(channel, TextChannel):
-            raise ValueError(_l.c("ChannelNotFound"))
+            raise ValueError(logger.c("ChannelNotFound"))
         thread = channel.get_thread(thread_id)
         if not isinstance(thread, Thread):
-            raise ValueError(_l.c("ThreadNotFound"))
+            raise ValueError(logger.c("ThreadNotFound"))
         return cls(chat=thread, channel_id=channel_id, thread_id=thread_id)

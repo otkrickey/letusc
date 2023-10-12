@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
 
 from ..db import DBManager
-from ..logger import L
+from ..logger import get_logger
 from .base import BaseDatabase, BaseModel, attrs, from_api_attrs, to_api_attrs, types
 from .cookie import Cookie
 from .discord import DiscordUser, DiscordUserAny, DiscordUserBase
 from .letus import LetusUser, LetusUserBase, LetusUserWithCookies, LetusUserWithPassword
+
+logger = get_logger(__name__)
 
 __all__ = [
     "AccountBase",
@@ -16,7 +18,6 @@ __all__ = [
 
 @dataclass
 class AccountBase(BaseDatabase, BaseModel):
-    _l = L()
     _attrs = BaseModel._attrs | attrs(
         ["multi_id", "student_id", "discord_id", "Letus", "Discord"]
     )
@@ -58,8 +59,6 @@ class AccountBase(BaseDatabase, BaseModel):
 
     def __post_init__(self):
         BaseModel.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
         match len(self.multi_id):
             case 7:
                 self.key_name = "student_id"
@@ -68,30 +67,35 @@ class AccountBase(BaseDatabase, BaseModel):
                 self.key_name = "discord_id"
                 self.key = self.multi_id
             case _:
-                raise ValueError(_l.c("InvalidMultiID"))
+                raise ValueError(logger.c("InvalidMultiID"))
 
     def get_cookie(self, year: str) -> Cookie:
         try:
             self.check()
         except TypeError as e:
-            if str(e) == self._l.gm("check").c("TypeError:LetsUserWithCookies"):
-                raise Exception(self._l.gm("get_cookie").c("NoCookies")) from e
+            if (
+                f"{self.__class__.__name__}.check:TypeError:LetusUserWithCookies"
+                in str(e)
+            ):
+                raise Exception(logger.c("NoCookies")) from e
         finally:
             assert isinstance(self.Letus, LetusUserWithCookies)
             for cookie in self.Letus.cookies:
                 if cookie.year == year:
                     return cookie
             else:
-                raise Exception(self._l.gm("get_cookie").c("NoCookies"))
+                raise Exception(logger.c("NoCookies"))
 
     async def push(self) -> None:
-        _l = self._l.gm("push")
         try:
             self.check()
         except TypeError as e:
-            if str(e) == self._l.gm("check").c("TypeError:LetusUserWithCookies"):
+            if (
+                f"{self.__class__.__name__}.check:TypeError:LetusUserWithCookies"
+                in str(e)
+            ):
                 pass
-            elif str(e) == self._l.gm("check").c("TypeError:DiscordUser"):
+            elif f"{self.__class__.__name__}.check:TypeError:DiscordUser" in str(e):
                 pass
             else:
                 raise e
@@ -101,12 +105,8 @@ class AccountBase(BaseDatabase, BaseModel):
 
 @dataclass
 class Account(AccountBase):
-    _l = L()
-
     def __post_init__(self):
         AccountBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def pull(cls, multi_id: str) -> "Account":
@@ -118,7 +118,6 @@ class Account(AccountBase):
 
 @dataclass
 class NewAccount(AccountBase):
-    _l = L()
     multi_id: str = field(init=False)
     student_id: str
     discord_id: str
@@ -128,8 +127,6 @@ class NewAccount(AccountBase):
     def __post_init__(self):
         self.multi_id = self.discord_id
         AccountBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     def create(
@@ -140,7 +137,6 @@ class NewAccount(AccountBase):
         username: str,
         discriminator: str,
     ) -> "NewAccount":
-        _l = L(cls.__name__).gm("create")
         return cls(
             student_id=student_id,
             discord_id=discord_id,

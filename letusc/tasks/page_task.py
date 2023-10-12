@@ -4,12 +4,14 @@ import discord
 from discord.ui import Button, View
 
 from ..chat import DiscordChat, DiscordChatChannel, DiscordChatThread, EmbedBuilder
-from ..logger import L
+from ..logger import get_logger
 from ..models.code import PageCode
 from ..models.page import Page
 from ..parser import Parser
 from ..util import env
 from .base_task import TaskBase
+
+logger = get_logger(__name__)
 
 __all__ = [
     "RegisterPageView",
@@ -22,12 +24,8 @@ __all__ = [
 
 
 class RegisterPageView(View):
-    _l = L()
-
     def __init__(self, id: int, url: str | None = None):
         View.__init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
         self._id = id
         if url:
             self.add_item(Button(label="Open", url=url, style=discord.ButtonStyle.link))
@@ -38,8 +36,7 @@ class RegisterPageView(View):
         button: discord.ui.Button,
         interaction: discord.Interaction,
     ):
-        _l = self._l.gm("register")
-        _l.info("Register button clicked")
+        logger.info("Register button clicked")
         await interaction.response.send_message(
             embed=EmbedBuilder.from_json("task.page.register:Start", id=self._id)
         )
@@ -55,12 +52,8 @@ class RegisterPageView(View):
 
 
 class FetchPageView(View):
-    _l = L()
-
     def __init__(self, id: int, url: str | None = None):
         View.__init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
         self._id = id
         if url:
             self.add_item(Button(label="Open", url=url, style=discord.ButtonStyle.link))
@@ -71,8 +64,7 @@ class FetchPageView(View):
         button: discord.ui.Button,
         interaction: discord.Interaction,
     ):
-        _l = self._l.gm("fetch")
-        _l.info("Fetch button clicked")
+        logger.info("Fetch button clicked")
         await interaction.response.send_message(
             embed=EmbedBuilder.from_json("task.page.fetch:Start", id=self._id)
         )
@@ -89,19 +81,12 @@ class FetchPageView(View):
 
 @dataclass
 class PageTaskBase(TaskBase):
-    _l = L()
     task: str
     multi_id: str
     code: str
 
-    def __post_init__(self):
-        TaskBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
-
     @staticmethod
     async def from_api(task: dict) -> "PageTaskBase":
-        _l = L(PageTaskBase.__name__).gm("from_api")
         action = task["task"].split(":")[1]
         match action:
             case "fetch":
@@ -109,44 +94,35 @@ class PageTaskBase(TaskBase):
             case "register":
                 return await RegisterPageTask.from_api(task)
             case _:
-                raise KeyError(_l.c("UnknownAction"))
+                raise KeyError(logger.c("UnknownAction"))
 
 
 @dataclass
 class FetchPageTask(PageTaskBase):
-    _l = L()
     task: str = field(init=False, default="page:fetch")
     multi_id: str
     code: PageCode
 
-    def __post_init__(self):
-        PageTaskBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
-
     @classmethod
     async def from_api(cls, task: dict) -> "FetchPageTask":
-        _l = L(cls.__name__).gm("from_api")
         return cls(multi_id=task["discord_id"], code=PageCode.create(task["code"]))
 
     @classmethod
     async def create(cls, object: dict):
-        _l = L(cls.__name__).gm("create")
         page = Page(object["code"])
         page.from_api(object)
         multi_id = page.accounts[0]
         return cls(multi_id=multi_id, code=PageCode(page.code))
 
     async def run(self, chat: DiscordChat):
-        _l = self._l.gm("run")
-        _l.info("Fetching page")
+        logger.info("Fetching page")
 
         ctx = chat.getCTX()
 
         try:
             _page = await Page.pull(self.code.code)
         except Exception as e:
-            if L("Page").gm("pull").c("NotFound") in str(e):
+            if "Page.pull:NotFound" in str(e):
                 _page = None
             else:
                 raise e
@@ -203,37 +179,24 @@ class FetchPageTask(PageTaskBase):
 
 @dataclass
 class FetchPageLoopTask(PageTaskBase):
-    _l = L()
     task: str = field(init=False, default="page:fetch")
     multi_id: str
     code: PageCode
 
-    def __post_init__(self):
-        PageTaskBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
-
-    # @classmethod
-    # async def from_api(cls, task: dict) -> "FetchPageLoopTask":
-    #     _l = L(cls.__name__).gm("from_api")
-    #     return cls(multi_id=task["discord_id"], code=PageCode.create(task["code"]))
-
     @classmethod
     async def create(cls, object: dict):
-        _l = L(cls.__name__).gm("create")
         page = Page(object["code"])
         page.from_api(object)
         multi_id = page.accounts[0]
         return cls(multi_id=multi_id, code=PageCode(page.code))
 
     async def run(self):
-        _l = self._l.gm("run")
-        _l.info("Fetching page")
+        logger.info("Fetching page")
 
         try:
             _page = await Page.pull(self.code.code)
         except Exception as e:
-            if L("Page").gm("pull").c("NotFound") in str(e):
+            if "Page.pull:NotFound" in str(e):
                 _page = None
             else:
                 raise e
@@ -245,7 +208,7 @@ class FetchPageLoopTask(PageTaskBase):
         push = await parser.compare()
 
         if len(_page.chat) == 0:
-            _l.warn("No chat bound to the page")
+            logger.warn("No chat bound to the page")
             pairs: list[tuple[str, str]] = [
                 ("126936", "1152968855434571867"),
                 ("163437", "1152969064214438030"),
@@ -278,15 +241,9 @@ class FetchPageLoopTask(PageTaskBase):
 
 @dataclass
 class RegisterPageTask(PageTaskBase):
-    _l = L()
     task: str = field(init=False, default="page:register")
     multi_id: str
     code: PageCode
-
-    def __post_init__(self):
-        PageTaskBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def from_api(cls, task: dict) -> "RegisterPageTask":
@@ -296,15 +253,14 @@ class RegisterPageTask(PageTaskBase):
         )
 
     async def run(self, chat: DiscordChat):
-        _l = self._l.gm("run")
-        _l.info("Registering page")
+        logger.info("Registering page")
 
         ctx = chat.getCTX()
 
         try:
             _page = await Page.pull(self.code.code)
         except Exception as e:
-            if L("Page").gm("pull").c("NotFound") in str(e):
+            if "Page.pull:NotFound" in str(e):
                 _page = None
             else:
                 raise e

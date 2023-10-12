@@ -6,7 +6,7 @@ from aiohttp import ClientResponseError
 from bs4 import BeautifulSoup
 
 from ..db import DBManager
-from ..logger import L
+from ..logger import get_logger
 from ..session import SessionManager
 from .base import (
     BaseDatabase,
@@ -21,6 +21,8 @@ from .code import ContentHashCode, PageCode
 from .content import NewContent
 from .cookie import Cookie
 
+logger = get_logger(__name__)
+
 __all__ = [
     "PageBase",
     "Page",
@@ -33,7 +35,6 @@ __all__ = [
 
 @dataclass
 class PageBase(PageCode, BaseDatabase, BaseModel):
-    _l = L()
     _attrs = (
         BaseModel._attrs
         | PageCode._attrs
@@ -122,12 +123,9 @@ class PageBase(PageCode, BaseDatabase, BaseModel):
     def __post_init__(self):
         BaseModel.__post_init__(self)
         PageCode.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     async def get(self, cookie: Cookie) -> bs4.BeautifulSoup:
-        _l = self._l.gm("get")
-        _l.info(f"Requesting page: {self.url}")
+        logger.info(f"Requesting page: {self.url}")
         session = SessionManager.get()
         session.cookie_jar.update_cookies(cookie.to_dict())
         async with session.get(self.url) as response:
@@ -136,65 +134,51 @@ class PageBase(PageCode, BaseDatabase, BaseModel):
             except ClientResponseError as e:
                 match e.status:
                     case 404:
-                        _l.error(f"Page not found: {self.url}")
-                        raise Exception(_l.c("NotFound")) from e
+                        logger.error(f"Page not found: {self.url}")
+                        raise Exception(logger.c("NotFound")) from e
                     case 503:
-                        _l.error(f"Service unavailable: {self.url}")
-                        raise Exception(_l.c("ServiceUnavailable")) from e
+                        logger.error(f"Service unavailable: {self.url}")
+                        raise Exception(logger.c("ServiceUnavailable")) from e
                     case _:
-                        _l.warn(f"Error {e.status} for URL: {self.url}")
-                        raise Exception(_l.c("UnknownHTTPError")) from e
+                        logger.warn(f"Error {e.status} for URL: {self.url}")
+                        raise Exception(logger.c("UnknownHTTPError")) from e
             else:
-                _l.debug(f"Successfully fetched URL: {self.url}")
+                logger.debug(f"Successfully fetched URL: {self.url}")
                 html = await response.text()
                 return BeautifulSoup(html, "html.parser")
 
 
 @dataclass
 class Page(PageBase):
-    _l = L()
-
     def __post_init__(self):
         PageBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def pull(cls, code: str) -> "Page":
-        _l = L(cls.__name__).gm("pull")
         _code = PageCode.create(code)
         match _code.page_type:
             case "course":
                 page = CoursePage(code=code)
             case _:
-                raise ValueError(_l.c("UnknownPageType"))
+                raise ValueError(logger.c("UnknownPageType"))
         page.from_api(await page._pull())
         return page
 
 
 @dataclass
 class CoursePage(Page):
-    _l = L()
-
     def __post_init__(self):
         Page.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class PageParser(BaseParser, PageBase):
-    _l = L()
-
     contents: dict[str, NewContent] = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         PageBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     async def _parse(self, soup: BeautifulSoup) -> None:
-        _l = self._l.gm("_parse")
         self.title = self._get_title(soup.find(attrs={"class": "page-header-headings"}))
         self.contents = {
             c.code: c
@@ -210,21 +194,16 @@ class PageParser(BaseParser, PageBase):
 
 @dataclass
 class NewPage(PageParser, PageBase):
-    _l = L()
-
     def __post_init__(self):
         PageBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def parse(cls, code: PageCode, cookie: Cookie) -> "NewPage":
-        _l = L(cls.__name__).gm("parse")
         match code.page_type:
             case "course":
                 page = NewCoursePage(code.code)
             case _:
-                raise ValueError(_l.c("UnknownPageType"))
+                raise ValueError(logger.c("UnknownPageType"))
         soup = await page.get(cookie)
         await page._parse(soup)
         return page
@@ -238,9 +217,5 @@ class NewPage(PageParser, PageBase):
 
 @dataclass
 class NewCoursePage(NewPage):
-    _l = L()
-
     def __post_init__(self):
         NewPage.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")

@@ -8,9 +8,11 @@ from letusc.tasks.account_task import RegisterAccountLoopTask, RegisterAccountTa
 
 from ..chat import DiscordChatThread, EmbedBuilder
 from ..db import DBManager
-from ..logger import L
+from ..logger import get_logger
 from ..tasks.page_task import FetchPageLoopTask
 from ..util import env
+
+logger = get_logger(__name__)
 
 __all__ = [
     "Task",
@@ -18,11 +20,7 @@ __all__ = [
 
 
 class Task(commands.Cog):
-    _l = L()
-
     def __init__(self, bot_: discord.Bot):
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
         self.bot = bot_
         self.cookie_ready = asyncio.Event()
         self.fetchAll.start()
@@ -34,8 +32,7 @@ class Task(commands.Cog):
 
     @tasks.loop(minutes=int(env("CRAWLER_INTERVAL")))
     async def fetchAll(self):
-        _l = self._l.gm("fetchAll")
-        _l.info("task started")
+        logger.info("task started")
 
         await self.bot.wait_until_ready()
         await self.cookie_ready.wait()
@@ -60,9 +57,9 @@ class Task(commands.Cog):
             try:
                 task = await FetchPageLoopTask.create(page)
                 await task.run()
-                _l.info(task.code)
+                logger.info(task.code)
             except Exception as e:
-                _l.error(e)
+                logger.error(e)
             count += 1
 
         chat = await DiscordChatThread.get(
@@ -97,8 +94,7 @@ class Task(commands.Cog):
 
     @tasks.loop(hours=12)
     async def checkAllAccount(self):
-        _l = self._l.gm("checkAllAccount")
-        _l.info("task started")
+        logger.info("task started")
 
         await self.bot.wait_until_ready()
 
@@ -108,7 +104,7 @@ class Task(commands.Cog):
         while True:
             now = datetime.now().time()
             if maintenance_start <= now <= maintenance_end:
-                _l.info("waiting for maintenance time to end")
+                logger.info("waiting for maintenance time to end")
                 await asyncio.sleep(10 * 60)
             else:
                 break
@@ -133,9 +129,9 @@ class Task(commands.Cog):
             try:
                 task = await RegisterAccountLoopTask.create(account)
                 await task.run()
-                _l.info(task.multi_id)
+                logger.info(task.multi_id)
             except Exception as e:
-                _l.error(e)
+                logger.error(e)
             count += 1
 
         self.cookie_ready.set()

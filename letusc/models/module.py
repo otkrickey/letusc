@@ -5,7 +5,7 @@ from datetime import datetime
 import bs4
 
 from ..db import DBManager
-from ..logger import L
+from ..logger import get_logger
 from .base import (
     BaseDatabase,
     BaseModel,
@@ -16,6 +16,8 @@ from .base import (
     types,
 )
 from .code import ContentCode, ModuleCode
+
+logger = get_logger(__name__)
 
 __all__ = [
     "ModuleBase",
@@ -41,7 +43,6 @@ __all__ = [
 
 @dataclass
 class ModuleBase(ModuleCode, BaseDatabase, BaseModel):
-    _l = L()
     _attrs = (
         BaseModel._attrs
         | ModuleCode._attrs
@@ -113,22 +114,15 @@ class ModuleBase(ModuleCode, BaseDatabase, BaseModel):
     def __post_init__(self):
         BaseModel.__post_init__(self)
         ModuleCode.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class Module(ModuleBase):
-    _l = L()
-
     def __post_init__(self):
         ModuleBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     @classmethod
     async def pull(cls, code: str) -> "Module":
-        _l = L(cls.__name__).gm("pull")
         _code = ModuleCode.create(code)
         match _code.module_type:
             case "label":
@@ -150,15 +144,14 @@ class Module(ModuleBase):
             case _:
                 module = cls(code)
                 # NOTE: this will be removed if all module types are known.
-                _l.warn(f"The module type {_code.module_type} is not implemented.")
-                ## raise ValueError(_l.c("UnknownModuleType"))
+                logger.warn(f"The module type {_code.module_type} is not implemented.")
+                ## raise ValueError(logger.c("UnknownModuleType"))
         module.from_api(await module._pull())
         return module
 
 
 @dataclass
 class LabelModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("module_url", type(None), lambda obj: obj["module_url"]),
@@ -169,13 +162,10 @@ class LabelModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class PageModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("module_url", str, lambda obj: obj["module_url"]),
@@ -187,13 +177,10 @@ class PageModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class URLModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("module_url", str, lambda obj: obj["module_url"]),
@@ -205,13 +192,10 @@ class URLModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class ResourceModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("module_url", str, lambda obj: obj["module_url"]),
@@ -224,13 +208,10 @@ class ResourceModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class FolderModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("uploaded_at", type(None), lambda obj: obj["uploaded_at"]),
@@ -239,13 +220,10 @@ class FolderModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class FeedbackModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("module_url", str, lambda obj: obj["module_url"]),
@@ -257,13 +235,10 @@ class FeedbackModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class ForumModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("module_url", str, lambda obj: obj["module_url"]),
@@ -275,13 +250,10 @@ class ForumModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class AssignModule(Module):
-    _l = L()
     _from_api_attrs = Module._from_api_attrs | from_api_attrs(
         [
             ("module_url", str, lambda obj: obj["module_url"]),
@@ -293,45 +265,36 @@ class AssignModule(Module):
 
     def __post_init__(self):
         Module.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class ModuleParser(BaseParser, ModuleBase):
-    _l = L()
-
     def __post_init__(self):
         ModuleBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
     def _get_module_title(self, tag) -> str:
-        _l = self._l.gm("_get_module_title")
         if not isinstance(tag, bs4.Tag):
             return "<NoModuleTitleFound>"
         return tag.attrs["data-activityname"]
 
     def _get_uploaded_at(self, tag) -> datetime | None:
-        _l = self._l.gm("_get_uploaded_at")
         if not isinstance(tag, bs4.Tag):
             return None
         text = self._tag_filter(tag)
         try:
             match = re.search(r"(\d{2}年 \d{2}月 \d{2}日 \d{2}:\d{2})", text)
             if not match:
-                _l.error(f"Invalid datetime format: {text}")
+                logger.error(f"Invalid datetime format: {text}")
                 return None
             extracted_date = match.group(1)
             uploaded_at = datetime.strptime(extracted_date, "%y年 %m月 %d日 %H:%M")
         except Exception as e:
-            _l.error(f"Invalid datetime format: {text}")
-            _l.error(e)
+            logger.error(f"Invalid datetime format: {text}")
+            logger.error(e)
             return None
         return uploaded_at
 
     async def _parse(self, tag: bs4.Tag) -> None:
-        _l = self._l.gm("_parse")
         self.title = self._get_module_title(
             tag.find(class_="activity-item", attrs={"data-activityname": True})
         )
@@ -346,20 +309,15 @@ class ModuleParser(BaseParser, ModuleBase):
 
 @dataclass
 class NewModule(ModuleParser, ModuleBase):
-    _l = L()
-
     def __post_init__(self):
         ModuleBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
         self.module_url = self.url
 
     @classmethod
     async def parse(cls, code: ContentCode, tag) -> "NewModule":
-        _l = L(cls.__name__).gm("parse")
         if not isinstance(tag, bs4.Tag):
-            raise ValueError(_l.c("InvalidModuleTag"))
+            raise ValueError(logger.c("InvalidModuleTag"))
         _code = code.createModuleCode(tag)
         match _code.module_type:
             case "label":
@@ -381,52 +339,42 @@ class NewModule(ModuleParser, ModuleBase):
             case _:
                 module = cls(str(_code))
                 # NOTE: this will be removed if all module types are known.
-                _l.warn(f"The module type {_code.module_type} is not implemented.")
-                # raise ValueError(_l.c("UnknownModuleType"))
+                logger.warn(f"The module type {_code.module_type} is not implemented.")
+                # raise ValueError(logger.c("UnknownModuleType"))
         await module._parse(tag)
         return module
 
 
 @dataclass
 class NewLabelModule(NewModule):
-    _l = L()
     _from_api_attrs = LabelModule._from_api_attrs
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class NewPageModule(NewModule):
-    _l = L()
     _from_api_attrs = PageModule._from_api_attrs
 
     module_url: str = field(init=False)
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class NewURLModule(NewModule):
-    _l = L()
     _from_api_attrs = URLModule._from_api_attrs
 
     module_url: str = field(init=False)
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class NewResourceModule(NewModule):
-    _l = L()
     _from_api_attrs = ResourceModule._from_api_attrs
 
     module_url: str = field(init=False)
@@ -434,55 +382,41 @@ class NewResourceModule(NewModule):
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class NewFolderModule(NewModule):
-    _l = L()
     _from_api_attrs = FolderModule._from_api_attrs
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class NewFeedbackModule(NewModule):
-    _l = L()
     _from_api_attrs = FeedbackModule._from_api_attrs
 
     module_url: str = field(init=False)
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class NewForumModule(NewModule):
-    _l = L()
     _from_api_attrs = ForumModule._from_api_attrs
 
     module_url: str = field(init=False)
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class NewAssignModule(NewModule):
-    _l = L()
     _from_api_attrs = AssignModule._from_api_attrs
 
     module_url: str = field(init=False)
 
     def __post_init__(self):
         NewModule.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")

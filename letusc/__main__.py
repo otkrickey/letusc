@@ -1,14 +1,14 @@
 from .bot import LetusBotClient
 from .cogs import Account, Page, Task
-from .logger import L
+from .logger import get_logger
 from .task import TaskManager
 from .util import env_bool
 from .vpn import VPNManager
 
+logger = get_logger(__name__)
+
 
 def main():
-    _l = L("main").gm("async_main")
-
     if env_bool("VPN_ENABLED"):
         VC = VPNManager()
         VC.connect()
