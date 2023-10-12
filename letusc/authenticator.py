@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from .logger import L
+from .logger import get_logger
 from .models.account import AccountBase
 from .models.cookie import Cookie
 from .models.letus import LetusUser, LetusUserWithCookies
@@ -14,23 +14,20 @@ from .task import TaskManager
 from .url import URLManager
 from .util import env
 
+logger = get_logger(__name__)
+
 __all__ = [
     "Authenticator",
 ]
 
 
 class AuthController:
-    _l = L()
-
     def __init__(self, account: AccountBase):
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
         self.CHROME_DRIVER_PATH = env("CHROME_DRIVER_PATH")
         self.account = account
 
     def _register(self):
-        _l = self._l.gm("register")
-        _l.debug("Register to letus")
+        logger.debug("Register to letus")
 
         self.service = Service(self.CHROME_DRIVER_PATH)
         chrome_options = webdriver.ChromeOptions()
@@ -40,8 +37,7 @@ class AuthController:
         self._load_cookie()
 
     def _login_letus(self):
-        _l = self._l.gm("login_letus")
-        _l.debug("Login to letus (chrome)")
+        logger.debug("Login to letus (chrome)")
 
         auth_url = URLManager.getAuth()
         self.driver.get(auth_url)
@@ -52,23 +48,23 @@ class AuthController:
         while True:
             origin_url = URLManager.getOrigin()
             if origin_url in self.driver.current_url:
-                _l.debug("Letus Login Success")
+                logger.debug("Letus Login Success")
                 break
             elif time.time() > timeout:
-                _l.error("Timeout while accessing Letus Login Page")
-                raise TimeoutError(f"{_l}:Timeout")
+                logger.error("Timeout while accessing Letus Login Page")
+                raise TimeoutError(logger.c("Timeout"))
             elif "https://login.microsoftonline.com" in self.driver.current_url:
                 while True:
                     if time.time() > timeout:
-                        _l.error("Timeout while accessing Letus Login Page")
-                        raise TimeoutError(f"{_l}:Timeout")
+                        logger.error("Timeout while accessing Letus Login Page")
+                        raise TimeoutError(logger.c("Timeout"))
                     try:
                         self._login_ms()
                     except ValueError as e:
-                        if str(e) == f"{AuthController._l}.login_ms:PasswordError":
+                        if str(e) == f"AuthController._login_ms:PasswordError":
                             raise e
                     except:
-                        _l.warn("Retrying...")
+                        logger.warn("Retrying...")
                         continue
                     else:
                         break
@@ -76,27 +72,26 @@ class AuthController:
                 continue
 
     def _login_ms(self):
-        _l = self._l.gm("login_ms")
-        _l.debug("Login to Microsoft")
+        logger.debug("Login to Microsoft")
         auth_url = URLManager.getAuth()
         self.driver.get(auth_url)
 
         # NOTE:wait [idp.admin.tus.ac.jp]
-        _l.debug("Wait for [idp.admin.tus.ac.jp]")
-        _l.debug("Click `next` on [idp.admin.tus.ac.jp]")
+        logger.debug("Wait for [idp.admin.tus.ac.jp]")
+        logger.debug("Click `next` on [idp.admin.tus.ac.jp]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located((By.NAME, "_eventId_ChooseSam2"))
         ).click()
 
         # NOTE:wait [login.microsoftonline.com][email]
-        _l.debug("Wait for [login.microsoftonline.com][email]")
+        logger.debug("Wait for [login.microsoftonline.com][email]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located((By.TAG_NAME, "body"))
         )
         try:
             # NOTE:wait [login.microsoftonline.com][email][select]
-            _l.debug("Wait for [login.microsoftonline.com][email][select]")
-            _l.debug("Select `email` on [login.microsoftonline.com][email][select]")
+            logger.debug("Wait for [login.microsoftonline.com][email][select]")
+            logger.debug("Select `email` on [login.microsoftonline.com][email][select]")
             WebDriverWait(self.driver, 3).until(
                 EC.presence_of_element_located(
                     (By.XPATH, f'//div[@data-test-id="{self.account.Letus.email}"]')
@@ -104,12 +99,12 @@ class AuthController:
             ).click()
         except:
             # NOTE:wait [login.microsoftonline.com][email][input]
-            _l.debug("Wait for [login.microsoftonline.com][email][input]")
-            _l.debug("Input `email` on [login.microsoftonline.com][email][input]")
+            logger.debug("Wait for [login.microsoftonline.com][email][input]")
+            logger.debug("Input `email` on [login.microsoftonline.com][email][input]")
             WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.NAME, "loginfmt"))
             ).send_keys(self.account.Letus.email)
-            _l.debug("Click `next` on [login.microsoftonline.com][email][input]")
+            logger.debug("Click `next` on [login.microsoftonline.com][email][input]")
             WebDriverWait(self.driver, 3).until(
                 EC.presence_of_element_located(
                     (By.ID, "idSIButton9") and (By.XPATH, '//input[@value="Next"]')
@@ -117,12 +112,12 @@ class AuthController:
             ).click()
 
         # NOTE:wait [login.microsoftonline.com][password]
-        _l.debug("Wait for [login.microsoftonline.com][password]")
-        _l.debug("Input `password` on [login.microsoftonline.com][password]")
+        logger.debug("Wait for [login.microsoftonline.com][password]")
+        logger.debug("Input `password` on [login.microsoftonline.com][password]")
         WebDriverWait(self.driver, 5).until(
             EC.presence_of_element_located((By.NAME, "passwd"))
         ).send_keys(self.account.Letus.encrypted_password)
-        _l.debug("Click `sign in` on [login.microsoftonline.com][password]")
+        logger.debug("Click `sign in` on [login.microsoftonline.com][password]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located(
                 (By.ID, "idSIButton9") and (By.XPATH, '//input[@value="Sign in"]')
@@ -135,26 +130,25 @@ class AuthController:
                 EC.presence_of_element_located((By.ID, "passwordError"))
             )
         except:
-            _l.debug("Password is Valid")
+            logger.debug("Password is Valid")
         else:
-            _l.error("Password Error")
-            raise ValueError(f"{_l}:PasswordError")
+            logger.error("Password Error")
+            raise ValueError(logger.c("PasswordError"))
 
         # NOTE:wait [login.microsoftonline.com][DontShowAgain]
-        _l.debug("Wait for [login.microsoftonline.com][DontShowAgain]")
+        logger.debug("Wait for [login.microsoftonline.com][DontShowAgain]")
         WebDriverWait(self.driver, 5).until(
             EC.presence_of_element_located((By.NAME, "DontShowAgain"))
         ).click()
-        _l.debug("Click `yes` on [login.microsoftonline.com][DontShowAgain]")
+        logger.debug("Click `yes` on [login.microsoftonline.com][DontShowAgain]")
         WebDriverWait(self.driver, 3).until(
             EC.presence_of_element_located(
                 (By.ID, "idSIButton9") and (By.XPATH, '//input[@value="Yes"]')
             )
         ).click()
-        _l.info("Microsoft Login Success")
+        logger.info("Microsoft Login Success")
 
     def _load_cookie(self):
-        _l = self._l.gm("load_cookie")
         cookies = self.driver.get_cookies()
         new_cookies = []
         for new_cookie in cookies:
@@ -166,7 +160,7 @@ class AuthController:
                 )
                 new_cookies.append(cookie)
                 text = f'"\33[36mMoodleSession{cookie.year}\33[0m": "\33[36m{cookie.value}\33[0m"'
-                _l.info("Cookie found: {" + text + "}")
+                logger.info("Cookie found: {" + text + "}")
         if isinstance(self.account.Letus, LetusUserWithCookies):
             for new_cookie in new_cookies:
                 for cookie in self.account.Letus.cookies:
@@ -185,35 +179,27 @@ class AuthController:
             )
 
     def register(self):
-        _l = self._l.gm("register")
         self._register()
 
     def login(self):
-        _l = self._l.gm("login")
-        _l.debug("Login to letus")
+        logger.debug("Login to letus")
         if isinstance(self.account.Letus, LetusUserWithCookies):
             for cookie in self.account.Letus.cookies:
                 text = f'"\33[36m{cookie.name}\33[0m": "\33[36m{cookie.value}\33[0m"'
-                _l.info("Cookie found: {" + text + "}")
+                logger.info("Cookie found: {" + text + "}")
         else:
-            _l.warn("Cookie not found")
+            logger.warn("Cookie not found")
         self._register()
 
 
 class Authenticator(AuthController):
-    _l = L()
-
     def __init__(self, account: AccountBase):
         AuthController.__init__(self, account)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
 
     async def register(self):
-        _l = self._l.gm("register")
         loop = TaskManager.get_loop()
         await loop.run_in_executor(None, super().register)
 
     async def login(self):
-        _l = self._l.gm("login")
         loop = TaskManager.get_loop()
         await loop.run_in_executor(None, super().login)

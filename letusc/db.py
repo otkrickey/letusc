@@ -4,7 +4,10 @@ from motor.motor_asyncio import (
     AsyncIOMotorDatabase,
 )
 
+from .logger import get_logger
 from .url import URLManager
+
+logger = get_logger(__name__)
 
 __all__ = [
     "DBManager",

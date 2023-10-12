@@ -2,10 +2,12 @@ import discord
 from discord import SlashCommandGroup, option
 from discord.ext import commands
 
-from ..logger import L
+from ..logger import get_logger
 from ..task import TaskManager
 from ..tasks.account_task import RegisterAccountTask
 from ..util import env, env_any
+
+logger = get_logger(__name__)
 
 __all__ = [
     "Account",
@@ -13,11 +15,7 @@ __all__ = [
 
 
 class Account(commands.Cog):
-    _l = L()
-
     def __init__(self, bot):
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
         self.bot = bot
 
     account = SlashCommandGroup(
@@ -41,7 +39,6 @@ class Account(commands.Cog):
         required=True,
     )
     async def register(self, ctx: discord.ApplicationContext, id: int, password: str):
-        _l = self._l.gm("register")
         task = RegisterAccountTask(
             student_id=f"{id}",
             discord_id=f"{ctx.author.id}",
@@ -65,7 +62,6 @@ class Account(commands.Cog):
         required=True,
     )
     async def status(self, ctx: discord.ApplicationContext, id: int):
-        _l = self._l.gm("status")
         await ctx.respond(
             "サーバーでログイン情報を確認しています。\n詳細はDMでお知らせします。",
             ephemeral=True,

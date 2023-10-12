@@ -8,7 +8,9 @@ import bs4
 from bs4 import BeautifulSoup
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from ..logger import L
+from ..logger import get_logger
+
+logger = get_logger(__name__)
 
 __all__ = [
     "attr_",
@@ -70,7 +72,6 @@ def to_api_attrs(api_attrs: to_api_attrs_ = []) -> to_api_attr_dict_:
 
 @dataclass
 class BaseModel:
-    _l = L()
     _attrs = attrs()
     _types = types()
     _from_api_attrs = from_api_attrs()
@@ -80,7 +81,6 @@ class BaseModel:
     key_name: str = field(init=False)
 
     def __post_init__(self) -> None:
-        self._l = L(self.__class__.__name__)
         self.key = "key"
         self.key_name = "key_name"
 
@@ -88,17 +88,16 @@ class BaseModel:
         self._check(attrs=self._attrs, types=self._types)
 
     def _check(self, attrs: attr_dict_ = {}, types: type_dict_ = {}) -> None:
-        _l = self._l.gm("check")
         for _attr in attrs.keys():
             try:
                 if not hasattr(self, _attr):
-                    _l.error(f"Attribute Error: {_attr}")
+                    logger.error(f"Attribute Error: {_attr}")
                     raise ValueError
             except Exception as e:
-                _l.error(
+                logger.error(
                     f"AttributeError: {_attr} in {self.__class__.__name__}({self.key_name}={self.key})"
                 )
-                raise ValueError(_l.c(f"AttributeError:{_attr}")) from e
+                raise ValueError(logger.c(f"AttributeError:{_attr}")) from e
         for _attr, _err, _type in types.values():
             try:
                 if get_origin(_type) is Union or get_origin(_type) is UnionType:
@@ -124,16 +123,15 @@ class BaseModel:
                 elif not isinstance(getattr(self, _attr, None), _type):
                     raise TypeError
             except Exception as e:
-                _l.error(
+                logger.error(
                     f"TypeError: {_attr}={getattr(self, _attr, None)} must be {_type} in {self.__class__.__name__}({self.key_name}={self.key})"
                 )
-                raise ValueError(_l.c(f"TypeError:{_err}")) from e
+                raise ValueError(logger.c(f"TypeError:{_err}")) from e
 
     def from_api(self, object: dict) -> None:
         self._from_api(object, attrs=self._from_api_attrs)
 
     def _from_api(self, object: dict, attrs: from_api_attr_dict_ = {}) -> None:
-        _l = self._l.gm("from_api")
         for _attr, _type, _converter in attrs.values():
             try:
                 converted_value = _converter(object)
@@ -161,13 +159,12 @@ class BaseModel:
                     raise ValueError
                 setattr(self, _attr, converted_value)
             except Exception as e:
-                _l.error(
+                logger.error(
                     f"InvalidData: {_attr} in {self.__class__.__name__}({self.key_name}={self.key})"
                 )
-                raise ValueError(_l.c("InvalidData")) from e
+                raise ValueError(logger.c("InvalidData")) from e
 
     def to_api(self) -> dict:
-        _l = self._l.gm("to_api")
         return {
             attr: converter(self) for attr, converter in self._to_api_attrs.values()
         }
@@ -175,68 +172,59 @@ class BaseModel:
 
 @dataclass
 class BaseDatabase(BaseModel):
-    _l = L()
     collection: AsyncIOMotorCollection = field(init=False)
 
     async def push(self) -> None:
-        _l = self._l.gm("push")
         ignore_ids = ["1081922", "1078139", "169670", "1802075", "1802076", "180209011"]
         for ignore_id in ignore_ids:
             if ignore_id in self.key:
-                _l.warn(f"Skip: {self.key_name}={self.key} because of ignore_ids")
+                logger.warn(f"Skip: {self.key_name}={self.key} because of ignore_ids")
                 return
-        _l.debug(f"Push {self.key_name}={self.key}")
+        logger.debug(f"Push {self.key_name}={self.key}")
         try:
             await self._pull()
         except ValueError as e:
-            if str(e) == self._l.gm("pull").c("NotFound"):
+            if f"{self.__class__.__name__}.pull:NotFound" in str(e):
                 return await self._register()
             raise e
         else:
             await self._update()
 
     async def _pull(self) -> dict:
-        _l = self._l.gm("pull")
-        _l.debug(f"Pull: {self.key_name}={self.key}")
+        logger.debug(f"Pull: {self.key_name}={self.key}")
         filter = {self.key_name: self.key}
         object = await self.collection.find_one(filter)
         if object is None:
-            _l.error(f"NotFound: {self.key_name}={self.key}")
-            raise ValueError(_l.c("NotFound"))
+            logger.error(f"NotFound: {self.key_name}={self.key}")
+            raise ValueError(logger.c("NotFound"))
         return object
 
     async def _register(self) -> None:
-        _l = self._l.gm("register")
-        _l.debug(f"Register: {self.key_name}={self.key}")
+        logger.debug(f"Register: {self.key_name}={self.key}")
         try:
             await self.collection.insert_one(self.to_api())
         except Exception as e:
-            raise ValueError(_l.c("DatabaseError")) from e
+            raise ValueError(logger.c("DatabaseError")) from e
 
     async def _update(self) -> None:
-        _l = self._l.gm("update")
-        _l.debug(f"Update: {self.key_name}={self.key}")
+        logger.debug(f"Update: {self.key_name}={self.key}")
         filter = {self.key_name: self.key}
         try:
             await self.collection.update_one(
                 filter, {"$set": self.to_api()}, upsert=True
             )
         except Exception as e:
-            raise ValueError(_l.c("DatabaseError")) from e
+            raise ValueError(logger.c("DatabaseError")) from e
 
 
 @dataclass
 class BaseParser(BaseDatabase, BaseModel):
-    _l = L()
-
     def _get_title(self, tag) -> str:
-        _l = self._l.gm("_get_page_title")
         if not isinstance(tag, bs4.Tag):
-            raise ValueError(_l.c("NoTitleFound"))
+            raise ValueError(logger.c("NoTitleFound"))
         return tag.text.lstrip().rstrip()
 
     def _get_main(self, tag) -> str:
-        _l = self._l.gm("_get_main")
         if not isinstance(tag, bs4.Tag):
             return ""
         for br in tag.find_all("br"):
@@ -248,11 +236,10 @@ class BaseParser(BaseDatabase, BaseModel):
         return "\n".join(tag.stripped_strings)
 
     def _get_hash(self, tag) -> str:
-        _l = self._l.gm("_get_hash")
         if isinstance(tag, str):
             return self.__hash(tag)
         if not isinstance(tag, bs4.Tag):
-            raise ValueError(_l.c("NoMainFound"))
+            raise ValueError(logger.c("NoMainFound"))
         return self.__hash(self._text_filter(str(tag)))
 
     @staticmethod

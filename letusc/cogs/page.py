@@ -3,10 +3,12 @@ from discord import SlashCommandGroup, option
 from discord.ext import commands
 
 from ..chat import DiscordChat
-from ..logger import L
+from ..logger import get_logger
 from ..models.code import PageCode
 from ..tasks.page_task import FetchPageTask, RegisterPageTask
 from ..util import env, env_any
+
+logger = get_logger(__name__)
 
 __all__ = [
     "Page",
@@ -14,11 +16,7 @@ __all__ = [
 
 
 class Page(commands.Cog):
-    _l = L()
-
     def __init__(self, bot_: discord.Bot):
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__init__")
         self.bot = bot_
 
     page = SlashCommandGroup(
@@ -37,7 +35,6 @@ class Page(commands.Cog):
         required=True,
     )
     async def fetch(self, ctx: discord.ApplicationContext, id: int):
-        _l = self._l.gm("fetch")
         if not ctx.interaction.channel_id:
             return
         chat = await DiscordChat.getByCTX(ctx)
@@ -55,7 +52,6 @@ class Page(commands.Cog):
         required=True,
     )
     async def register(self, ctx: discord.ApplicationContext, id: int):
-        _l = self._l.gm("register")
         if not ctx.interaction.channel_id:
             return
         chat = await DiscordChat.getByCTX(ctx)

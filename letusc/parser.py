@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 
 from .chat import DiscordChatThread, EmbedBuilder
-from .logger import L
+from .logger import get_logger
 from .models.account import Account
 from .models.code import PageCode
 from .models.content import Content
 from .models.module import Module
 from .models.page import NewPage, Page
+
+logger = get_logger(__name__)
 
 __all__ = [
     "Parser",
@@ -15,14 +17,11 @@ __all__ = [
 
 @dataclass
 class Parser:
-    _l = L()
     page: NewPage
     _page: Page | None = None
 
     @classmethod
     async def create(cls, multi_id: str, code: PageCode) -> "Parser":
-        cls._l = L(cls.__name__)
-        _l = cls._l.gm("get")
         _account = await Account.pull(multi_id)
         cookie = _account.get_cookie(code.year)
         # page, _page = await asyncio.gather(
@@ -43,7 +42,6 @@ class Parser:
 
     @classmethod
     async def from_page(cls, _page: Page) -> "Parser":
-        _l = L(cls.__name__).gm("from_page")
         _code = PageCode.create(_page.code)
         account = await Account.pull(_page.accounts[0])
         cookie = account.get_cookie(_code.year)
@@ -51,22 +49,20 @@ class Parser:
         return cls(page=page, _page=_page)
 
     async def compare(self) -> bool:
-        _l = self._l.gm("compare")
         if not self._page:
-            _l.debug("The page does not exist in the database.")
+            logger.debug("The page does not exist in the database.")
             await self._compare(False)
             # await self.page.push()
             return True
         if self.page.hash == self._page.hash:
-            _l.debug("The page has not changed.")
+            logger.debug("The page has not changed.")
             return False
-        _l.debug("The page has changed.")
+        logger.debug("The page has changed.")
         await self._compare(True)
         # await self.page.push()
         return True
 
     async def _compare(self, notify=True, push=True) -> None:
-        _l = self._l.gm("_compare")
         contents = self.page.contents
         _contents = self._page.contents if self._page else {}
 
@@ -133,4 +129,4 @@ class Parser:
                     for chat in chats:
                         await chat.SendFromBuilder(builder)
 
-        _l.info("The page has been updated.")
+        logger.info("The page has been updated.")

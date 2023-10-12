@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 
-from ..logger import L
+from ..logger import get_logger
 from ..util import env
 from .base import BaseModel, attrs, to_api_attrs, types
 from .cookie import Cookie
+
+logger = get_logger(__name__)
 
 __all__ = [
     "LetusUserBase",
@@ -15,7 +17,6 @@ __all__ = [
 
 @dataclass
 class LetusUserBase(BaseModel):
-    _l = L()
     _attrs = BaseModel._attrs | attrs(
         ["student_id", "email", "encrypted_password", "cookies"]
     )
@@ -43,8 +44,6 @@ class LetusUserBase(BaseModel):
 
     def __post_init__(self):
         BaseModel.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
         self.email = f"{self.student_id}@{env('TUS_EMAIL_HOST')}"
         self.cookies = self.cookies or []
         self.key_name = "email"
@@ -80,7 +79,6 @@ class LetusUserBase(BaseModel):
 
 @dataclass
 class LetusUser(LetusUserBase):
-    _l = L()
     _types = LetusUserBase._types | types(
         [
             ("student_id", "StudentID", str),
@@ -90,13 +88,10 @@ class LetusUser(LetusUserBase):
 
     def __post_init__(self):
         LetusUserBase.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class LetusUserWithPassword(LetusUser):
-    _l = L()
     _types = LetusUser._types | types(
         [("encrypted_password", "EncryptedPassword", str)]
     )
@@ -105,13 +100,10 @@ class LetusUserWithPassword(LetusUser):
 
     def __post_init__(self):
         LetusUser.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")
 
 
 @dataclass
 class LetusUserWithCookies(LetusUserWithPassword):
-    _l = L()
     _types = LetusUserWithPassword._types | types(
         [("cookies", "Cookies", list[Cookie])]
     )
@@ -120,5 +112,3 @@ class LetusUserWithCookies(LetusUserWithPassword):
 
     def __post_init__(self):
         LetusUserWithPassword.__post_init__(self)
-        self._l = L(self.__class__.__name__)
-        _l = self._l.gm("__post_init__")

@@ -1,80 +1,116 @@
-from typing import Any, Optional
+import inspect
+import logging
+import re
 
 
-class L:
-    def __init__(self, name: Optional[str] = None, parent: Optional["L"] = None):
-        self.name = name if name else "root"
-        self.parent = parent
-        self.full = f"{self.parent.full}.{self.name}" if self.parent else self.name
-        full_split = []
-        for o in self.full.split("."):
-            if o[0].isupper():
-                full_split.append(f"\033[96m{o}\033[0m")
-            else:
-                full_split.append(f"\033[92m{o}\033[0m")
-        self.colored = ".".join(full_split)
-        self.methods = []
+class CustomHandler(logging.Handler):
+    def emit(self, record):
+        frames = inspect.stack()
 
-    #### private ####
-    def _s(self, length: int):
-        return " " * (length - (len(self.full) + 10))
+        for f in frames:
+            if f.function == record.funcName:
+                frame = f
+                break
+        else:
+            frame = frames[6]
 
-    def _hs(self, length: int, il: int = 1):
-        str_len = (length - (len(self.full) + 10)) // 2
-        return " " * str_len if il else " " * (str_len + 1)
+        if "self" in frame.frame.f_locals:
+            # instance method
+            class_name = frame.frame.f_locals["self"].__class__.__name__
+            method_name = frame.function
+            spacing_before_exec = " " * (34 - len(class_name) - len(method_name))
+            log_exec_str = f"\033[96m{class_name}\033[0m.\033[92m{method_name}\033[0m"
+        elif "cls" in frame.frame.f_locals:
+            # class method
+            class_name = frame.frame.f_locals["cls"].__name__
+            method_name = frame.function
+            spacing_before_exec = " " * (34 - len(class_name) - len(method_name))
+            log_exec_str = f"\033[96m{class_name}\033[0m.\033[92m{method_name}\033[0m"
+        elif frame.function != "<module>":
+            # function
+            function_name = frame.function
+            spacing_before_exec = " " * (34 - len(function_name))
+            log_exec_str = f"\033[92m{function_name}\033[0m"
+        else:
+            # root
+            spacing_before_exec = " " * (34 - 4)
+            log_exec_str = "\033[92mroot\033[0m"
 
-    def __str__(self) -> str:
-        return self.full
+        name = re.sub(r"^letusc\.", ".", record.name)
+        spacing_before_name = " " * (19 - len(name))
+        format_str = f"%(asctime)s {self.colorize_level(record.levelno)} {spacing_before_name}{name} [{spacing_before_exec}{log_exec_str}] %(message)s"
+        log_format = logging.Formatter(format_str)
+        print(log_format.format(record))
 
-    def _change_name(self, name: str):
-        self.__init__(name, self.parent)
+    def colorize_level(self, level: int):
+        no_color = "\033[0m"
+        colors = {
+            logging.DEBUG: "\033[33m",  # Yellow
+            logging.INFO: "\033[34m",  # Blue
+            logging.WARNING: "\033[35m",  # Magenta
+            logging.ERROR: "\033[31m",  # Red
+            logging.CRITICAL: "\033[41m",  # Red background
+        }
+        spacing = " " * (8 - len(logging.getLevelName(level)))
+        return f"[{colors.get(level, no_color)}{spacing}{logging.getLevelName(level)}{no_color}]"
 
-    def _change_parent(self, parent: "L"):
-        self.__init__(self.name, parent)
 
-    def _add_method(self, name: str) -> None:
-        self.methods.append(name)
-        setattr(self, name, L(name, self))
+class CustomLogger(logging.Logger):
+    @property
+    def full(self) -> str:
+        frames = inspect.stack()
+        for f in frames:
+            if f.function == "emit":
+                frame = f
+                break
+        else:
+            frame = frames[6]
 
-    def _get_method(self, name: str) -> Any:
-        l = getattr(self, name, None)
-        return l
-
-    def _code(self, code: str) -> str:
-        return f"{self.full}:{code}"
-
-    #### public ####
-    def info(self, message):
-        prefix = f"[{self._s(44)}{self.colored}]"
-        print(f"[ \033[34minfo\033[0m] {prefix} {message}")
-
-    def debug(self, message):
-        prefix = f"[{self._s(44)}{self.colored}]"
-        print(f"[\033[33mdebug\033[0m] {prefix} {message}")
-
-    def error(self, message):
-        prefix = f"[{self._s(44)}{self.colored}]"
-        print(f"[\033[31merror\033[0m] {prefix} {message}")
-
-    def warn(self, message):
-        prefix = f"[{self._s(44)}{self.colored}]"
-        print(f"[ \033[35mwarn\033[0m] {prefix} {message}")
-
-    def i(self, name: str) -> None:
-        return self._change_name(name)
-
-    def p(self, parent: "L") -> None:
-        return self._change_parent(parent)
-
-    def am(self, name: str) -> None:
-        return self._add_method(name)
-
-    def gm(self, name: str) -> "L":
-        l = self._get_method(name)
-        if not isinstance(l, L):
-            self.am(name)
-            return self.gm(name)
-        return l
+        if "self" in frame.frame.f_locals:
+            class_name = frame.frame.f_locals["self"].__class__.__name__
+            method_name = frame.function
+            return f"{class_name}.{method_name}"
+        elif "cls" in frame.frame.f_locals:
+            class_name = frame.frame.f_locals["cls"].__name__
+            method_name = frame.function
+            return f"{class_name}.{method_name}"
+        elif frame.function != "<module>":
+            function_name = frame.function
+            return f"{function_name}"
+        else:
+            return f"root"
 
     def c(self, code: str) -> str:
-        return self._code(code)
+        frames = inspect.stack()
+        for f in frames:
+            if f.function == "emit":
+                frame = f
+                break
+        else:
+            frame = frames[6]
+
+        if "self" in frame.frame.f_locals:
+            class_name = frame.frame.f_locals["self"].__class__.__name__
+            method_name = frame.function
+            return f"{class_name}.{method_name}:{code}"
+        elif "cls" in frame.frame.f_locals:
+            class_name = frame.frame.f_locals["cls"].__name__
+            method_name = frame.function
+            return f"{class_name}.{method_name}:{code}"
+        elif frame.function != "<module>":
+            function_name = frame.function
+            return f"{function_name}:{code}"
+        else:
+            return f"root:{code}"
+
+
+logging.setLoggerClass(CustomLogger)
+
+
+def get_logger(name: str) -> CustomLogger:
+    logger = logging.getLogger(name)
+    if not isinstance(logger, CustomLogger):
+        logger = CustomLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(CustomHandler())
+    return logger

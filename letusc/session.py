@@ -1,7 +1,9 @@
 from aiohttp import ClientSession
 
-from .logger import L
+from .logger import get_logger
 from .task import TaskManager
+
+logger = get_logger(__name__)
 
 __all__ = [
     "SessionManager",
@@ -9,15 +11,12 @@ __all__ = [
 
 
 class SessionManager:
-    _l = L()
     _session = None
 
     @classmethod
     def get(cls) -> ClientSession:
-        cls._l = L(cls.__name__)
-        _l = cls._l.gm("get")
         if cls._session is None:
-            _l.info("Creating session")
+            logger.info("Creating session")
             cls._session = ClientSession()
             TaskManager.get_loop().create_task(cls.wait_exit())
         cls._session.headers.update(
@@ -29,10 +28,8 @@ class SessionManager:
 
     @classmethod
     async def wait_exit(cls):
-        cls._l = L(cls.__name__)
-        _l = cls._l.gm("wait_exit")
         await TaskManager.get_exit_event().wait()
         if cls._session:
             await cls._session.close()
             cls._session = None
-        _l.info("session closed")
+        logger.info("session closed")
