@@ -59,12 +59,7 @@ class CustomLogger(logging.Logger):
     @property
     def full(self) -> str:
         frames = inspect.stack()
-        for f in frames:
-            if f.function == "emit":
-                frame = f
-                break
-        else:
-            frame = frames[6]
+        frame = frames[1] # 1 is the caller of this function
 
         if "self" in frame.frame.f_locals:
             class_name = frame.frame.f_locals["self"].__class__.__name__
@@ -82,12 +77,7 @@ class CustomLogger(logging.Logger):
 
     def c(self, code: str) -> str:
         frames = inspect.stack()
-        for f in frames:
-            if f.function == "emit":
-                frame = f
-                break
-        else:
-            frame = frames[6]
+        frame = frames[1] # 1 is the caller of this function
 
         if "self" in frame.frame.f_locals:
             class_name = frame.frame.f_locals["self"].__class__.__name__
