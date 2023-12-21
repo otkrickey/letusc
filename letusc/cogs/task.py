@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import discord
 from discord.ext import commands, tasks
 
-from letusc.tasks.account_task import RegisterAccountLoopTask, RegisterAccountTask
+from letusc.tasks.account_task import RegisterAccountLoopTask
 
 from ..chat import DiscordChatThread, EmbedBuilder
 from ..db import DBManager
@@ -25,10 +25,12 @@ class Task(commands.Cog):
         self.cookie_ready = asyncio.Event()
         self.fetchAll.start()
         self.checkAllAccount.start()
+        self.maintainThread.start()
 
     def cog_unload(self):
         self.fetchAll.cancel()
         self.checkAllAccount.cancel()
+        self.maintainThread.cancel()
 
     @tasks.loop(minutes=int(env("CRAWLER_INTERVAL")))
     async def fetchAll(self):
@@ -135,3 +137,32 @@ class Task(commands.Cog):
             count += 1
 
         self.cookie_ready.set()
+
+    @tasks.loop(hours=23)
+    async def maintainThread(self):
+        logger.info("task started")
+
+        await self.bot.wait_until_ready()
+
+        collection = DBManager.get_collection("letus", "pages")
+        cursor = collection.find({}, {"_id": 0, "chat": 1})
+
+        async for page_object in cursor:
+            try:
+                # like this
+                # page_object: dict = {'chat': {'1145206805849452634': '1152968855434571867'}}
+                for channel_id, thread_id in page_object["chat"].items():
+                    chat = await DiscordChatThread.get(
+                        channel_id=int(channel_id),
+                        thread_id=int(thread_id),
+                    )
+                    await chat.SendFromBuilder(
+                        EmbedBuilder.from_json(
+                            "task.thread.maintain:Start",
+                            date=datetime.now().strftime("%Y年%m月%d日"),
+                            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        ),
+                        silent=True,
+                    )
+            except Exception as e:
+                logger.error(e)

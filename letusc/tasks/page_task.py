@@ -162,15 +162,31 @@ class FetchPageTask(PageTaskBase):
         parser.page.accounts = _page.accounts
 
         for channel_id, thread_id in _page.chat.items():
-            thread = await DiscordChatThread.get(int(channel_id), int(thread_id))
-            await thread.SendFromBuilder(
-                EmbedBuilder.from_json(
-                    "task.page.fetch:OnThread",
-                    title=_page.title,
-                    id=self.code.page_id,
-                    url=_page.url,
+            try:
+                thread = await DiscordChatThread.get(int(channel_id), int(thread_id))
+                await thread.SendFromBuilder(
+                    EmbedBuilder.from_json(
+                        "task.page.fetch:OnThread",
+                        title=_page.title,
+                        id=self.code.page_id,
+                        url=_page.url,
+                    )
                 )
-            )
+            except Exception as e:
+                logger.error(f"Failed to send message to thread: {e}")
+                channel = await DiscordChatThread.get(
+                    channel_id=int(env("DEFAULT_CHANNEL")),
+                    thread_id=int(env("DEFAULT_COMMAND_THREAD")),
+                )
+                await channel.SendFromBuilder(
+                    EmbedBuilder.from_json(
+                        "task.page.fetch:ThreadError",
+                        role_id=env("DEV_ROLE_ID"),
+                        title=_page.title,
+                        id=self.code.page_id,
+                        url=_page.url,
+                    )
+                )
 
         if push:
             await parser.page.push()

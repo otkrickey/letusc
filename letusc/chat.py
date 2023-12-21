@@ -149,11 +149,25 @@ class DiscordChat:
     async def SendEmbedMessage(self, content: str | None, embed: Embed):
         await self.chat.send(content, embed=embed)
 
-    async def SendFromBuilder(self, builder: EmbedBuilder, view: View | None = None):
+    async def SendFromBuilder(
+        self,
+        builder: EmbedBuilder,
+        view: View | None = None,
+        silent: bool = False,
+    ):
         if view:
-            await self.chat.send(content=builder._content, embed=builder, view=view)
+            await self.chat.send(
+                content=builder._content,
+                embed=builder,
+                view=view,
+                silent=silent,
+            )
         else:
-            await self.chat.send(content=builder._content, embed=builder)
+            await self.chat.send(
+                content=builder._content,
+                embed=builder,
+                silent=silent,
+            )
 
     @classmethod
     async def getByID(cls, id: int) -> "DiscordChat":
