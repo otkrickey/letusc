@@ -49,8 +49,8 @@ class ExtendedLoginEventPayload(LoginEventPayload):
 
 @dataclass
 class Status:
-    status: str
-    message: str = field(default="")
+    connected: bool
+    alive: bool
 
 
 @dataclass

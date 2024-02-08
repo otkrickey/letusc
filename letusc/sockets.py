@@ -4,7 +4,7 @@ import socketio
 
 from .logger import get_logger
 from .models.account import NewAccount
-from .models.event import ExtendedLoginEventPayload, Progress
+from .models.event import ExtendedLoginEventPayload, Progress, Status
 from .util import env
 
 logger = get_logger(__name__)
@@ -50,11 +50,11 @@ class SocketIOClientBase:
     async def disconnect(self):
         await self.sio.disconnect()
 
-    async def send_status(self, status):
-        await self.sio.emit("status", status)
+    async def send_status(self, status: Status):
+        await self.sio.emit("status", asdict(status), namespace=self.path)
 
     async def send_progress(self, progress: Progress):
-        await self.sio.emit("progress", asdict(progress))
+        await self.sio.emit("progress", asdict(progress), namespace=self.path)
 
 
 class SocketIOClient:
