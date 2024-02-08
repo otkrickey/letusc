@@ -41,19 +41,27 @@ class SocketIOClientBase:
         self.host = env("SOCKET_HOST")
         self.path = env("SOCKET_PATH")
         self.sio = socketio.AsyncClient()
+        self.is_connected = False
 
     async def connect(self):
         self.sio.register_namespace(LetuscNSP(self.path))
         await self.sio.connect(self.host)
+        self.is_connected = True
+
+    async def wait(self):
         await self.sio.wait()
 
     async def disconnect(self):
         await self.sio.disconnect()
 
     async def send_status(self, status: Status):
+        if not self.is_connected:
+            return
         await self.sio.emit("status", asdict(status), namespace=self.path)
 
     async def send_progress(self, progress: Progress):
+        if not self.is_connected:
+            return
         await self.sio.emit("progress", asdict(progress), namespace=self.path)
 
 

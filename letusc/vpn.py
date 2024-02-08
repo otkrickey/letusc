@@ -270,6 +270,13 @@ class VPNController:
         VPNController._is_alive = is_alive
         logger.info(f"VPN alive: \33[32m{self._is_alive}\33[0m")
 
+        status = Status(
+            connected=VPNController._is_connected,
+            alive=VPNController._is_alive,
+        )
+        loop = TaskManager().get_loop()
+        loop.create_task(SocketIOClient.instance().send_status(status))
+
 
 class VPNManager:
     _Manager = None
@@ -306,14 +313,6 @@ class VPNManager:
         with VPNManager.cv:
             assert VPNManager._Manager is not None
             VPNManager._Manager.status()
-            status = Status(
-                connected=VPNManager._Manager._is_connected,
-                alive=VPNManager._Manager._is_alive,
-            )
-            manager = TaskManager()
-            loop = manager.get_loop()
-            client = SocketIOClient.instance()
-            loop.create_task(client.send_status(status))
             VPNManager.cv.notify()
 
     @staticmethod
