@@ -39,7 +39,7 @@ class RegisterAccountTask(AccountTaskBase):
     multi_id: str = field(init=False)
     student_id: str
     discord_id: str
-    encrypted_password: str
+    password: str
     username: str
     discriminator: str
     Letus: LetusUserWithPassword = field(init=False)
@@ -49,7 +49,7 @@ class RegisterAccountTask(AccountTaskBase):
         self.multi_id = self.discord_id
         self.Letus = LetusUserWithPassword(
             student_id=self.student_id,
-            encrypted_password=self.encrypted_password,
+            password=self.password,
         )
         self.Discord = DiscordUser(
             discord_id=self.discord_id,
@@ -62,7 +62,7 @@ class RegisterAccountTask(AccountTaskBase):
         return cls(
             student_id=task["student_id"],
             discord_id=task["discord_id"],
-            encrypted_password=task["encrypted_password"],
+            password=task["password"],
             username=task["username"],
             discriminator=task["discriminator"],
         )
@@ -72,7 +72,7 @@ class RegisterAccountTask(AccountTaskBase):
         account = NewAccount.create(
             student_id=self.student_id,
             discord_id=self.discord_id,
-            encrypted_password=self.encrypted_password,
+            password=self.password,
             username=self.username,
             discriminator=self.discriminator,
         )

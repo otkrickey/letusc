@@ -25,12 +25,12 @@ class Task(commands.Cog):
         self.cookie_ready = asyncio.Event()
         self.fetchAll.start()
         self.checkAllAccount.start()
-        self.maintainThread.start()
+        # self.maintainThread.start()
 
     def cog_unload(self):
         self.fetchAll.cancel()
         self.checkAllAccount.cancel()
-        self.maintainThread.cancel()
+        # self.maintainThread.cancel()
 
     @tasks.loop(minutes=int(env("CRAWLER_INTERVAL")))
     async def fetchAll(self):

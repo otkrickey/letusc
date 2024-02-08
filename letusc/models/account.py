@@ -133,7 +133,7 @@ class NewAccount(AccountBase):
         cls,
         student_id: str,
         discord_id: str,
-        encrypted_password: str,
+        password: str,
         username: str,
         discriminator: str,
     ) -> "NewAccount":
@@ -142,7 +142,7 @@ class NewAccount(AccountBase):
             discord_id=discord_id,
             Letus=LetusUserWithPassword(
                 student_id=student_id,
-                encrypted_password=encrypted_password,
+                password=password,
             ),
             Discord=DiscordUser(
                 discord_id=discord_id,

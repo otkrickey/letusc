@@ -184,7 +184,7 @@ class BaseDatabase(BaseModel):
         try:
             await self._pull()
         except ValueError as e:
-            if f"{self.__class__.__name__}.pull:NotFound" in str(e):
+            if f"{self.__class__.__name__}._pull:NotFound" in str(e):
                 return await self._register()
             raise e
         else:

@@ -3,6 +3,8 @@ import threading
 from os import path
 
 from .logger import get_logger
+from .sockets import SocketIOClient
+from .task import TaskManager
 from .util import env
 
 logger = get_logger(__name__)
@@ -302,6 +304,14 @@ class VPNManager:
         with VPNManager.cv:
             assert VPNManager._Manager is not None
             VPNManager._Manager.status()
+            status = {
+                "connected": VPNManager._Manager._is_connected,
+                "alive": VPNManager._Manager._is_alive,
+            }
+            manager = TaskManager()
+            loop = manager.get_loop()
+            client = SocketIOClient.instance()
+            loop.create_task(client.send_status(status))
             VPNManager.cv.notify()
 
     @staticmethod

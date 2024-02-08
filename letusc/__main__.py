@@ -1,9 +1,13 @@
 from .bot import LetusBotClient
 from .cogs import Account, Page, Task
 from .logger import get_logger
+from .sockets import SocketIOClientBase
 from .task import TaskManager
 from .util import env_bool
 from .vpn import VPNManager
+
+from .extensions.shareLink.bot import ShareLinkClient
+from .extensions.shareLink.cogs import ShareLink
 
 logger = get_logger(__name__)
 
@@ -21,9 +25,16 @@ def main():
     client.add_cogMeta(Page)
     client.add_cogMeta(Task)
 
+    extension_share_link_client = ShareLinkClient()
+    extension_share_link_client.add_cogMeta(ShareLink)
+
+    socketio_client = SocketIOClientBase()
+
     loop = manager.get_loop()
     # loop.create_task(accountWatcher())
     loop.create_task(client.run_bot())
+    loop.create_task(extension_share_link_client.run_bot())
+    loop.create_task(socketio_client.connect())
 
     manager.start()
 

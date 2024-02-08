@@ -19,9 +19,11 @@ class Account(commands.Cog):
         self.bot = bot
 
     account = SlashCommandGroup(
-        f"account-{env('BOT_COMMAND_SUFFIX')}"
-        if env_any("BOT_COMMAND_SUFFIX")
-        else "account",
+        (
+            f"account-{env('BOT_COMMAND_SUFFIX')}"
+            if env_any("BOT_COMMAND_SUFFIX")
+            else "account"
+        ),
         "Account commands",
     )
 
@@ -42,7 +44,7 @@ class Account(commands.Cog):
         task = RegisterAccountTask(
             student_id=f"{id}",
             discord_id=f"{ctx.author.id}",
-            encrypted_password=password,
+            password=password,
             username=ctx.author.name,
             discriminator=ctx.author.discriminator,
         )
