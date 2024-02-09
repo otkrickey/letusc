@@ -4,7 +4,7 @@ from os import path
 
 
 from .logger import get_logger
-from .models.event import Status
+from .models.event import StatusPayload
 from .sockets import SocketIOClient
 from .task import TaskManager
 from .util import env
@@ -270,7 +270,7 @@ class VPNController:
         VPNController._is_alive = is_alive
         logger.info(f"VPN alive: \33[32m{self._is_alive}\33[0m")
 
-        status = Status(
+        status = StatusPayload(
             connected=VPNController._is_connected,
             alive=VPNController._is_alive,
         )

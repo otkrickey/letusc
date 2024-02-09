@@ -1,4 +1,3 @@
-import socketio
 from .bot import LetusBotClient
 from .cogs import Account, Page, Task
 from .logger import get_logger
@@ -33,7 +32,6 @@ def main():
 
     loop = manager.get_loop()
     loop.run_until_complete(socketio_client.connect())
-    # loop.create_task(accountWatcher())
     # loop.create_task(client.run_bot())
     loop.create_task(extension_share_link_client.run_bot())
     loop.create_task(socketio_client.wait())

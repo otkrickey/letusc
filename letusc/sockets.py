@@ -4,7 +4,7 @@ import socketio
 
 from .logger import get_logger
 from .models.account import NewAccount
-from .models.event import ExtendedLoginEventPayload, Progress, Status
+from .models.event import ExtendedLoginEventPayload, Progress, Status, StatusPayload
 from .util import env
 
 logger = get_logger(__name__)
@@ -31,9 +31,28 @@ class LetuscNSP(socketio.AsyncClientNamespace):
             username=data.username,
             discriminator=data.discriminator,
         )
+
         logger.debug("Login via socket")
+        progress = Progress(
+            data.client,
+            "SocketIOClient:on_login",
+            "Login via socket",
+            Status.START,
+            1,
+        )
+        await SocketIOClient.instance().send_progress(progress)
+
         await Authenticator(account, data.client).login_via_socket()
+
         logger.debug("Login via socket done")
+        progress = Progress(
+            data.client,
+            "SocketIOClient:on_login",
+            "Login via socket done",
+            Status.END,
+            22,
+        )
+        await SocketIOClient.instance().send_progress(progress)
 
 
 class SocketIOClientBase:
@@ -54,7 +73,7 @@ class SocketIOClientBase:
     async def disconnect(self):
         await self.sio.disconnect()
 
-    async def send_status(self, status: Status):
+    async def send_status(self, status: StatusPayload):
         if not self.is_connected:
             return
         await self.sio.emit("status", asdict(status), namespace=self.path)
@@ -62,7 +81,15 @@ class SocketIOClientBase:
     async def send_progress(self, progress: Progress):
         if not self.is_connected:
             return
-        await self.sio.emit("progress", asdict(progress), namespace=self.path)
+        payload = {
+            "client": progress.client,
+            "type": progress.type,
+            "message": progress.message,
+            "status": progress.status.value,
+            "progress": progress.progress,
+            "total": progress.total,
+        }
+        await self.sio.emit("progress", payload, namespace=self.path)
 
 
 class SocketIOClient:

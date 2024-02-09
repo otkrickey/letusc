@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+from enum import Enum, auto
 
 from ..logger import get_logger
 
@@ -7,7 +8,7 @@ logger = get_logger(__name__)
 __all__ = [
     "LoginEventPayload",
     "ExtendedLoginEventPayload",
-    "Status",
+    "StatusPayload",
     "Progress",
 ]
 
@@ -48,15 +49,26 @@ class ExtendedLoginEventPayload(LoginEventPayload):
 
 
 @dataclass
-class Status:
+class StatusPayload:
     connected: bool
     alive: bool
+
+
+class Status(Enum):
+    START = "start"
+    SUCCESS = "success"
+    WAIT = "wait"
+    CLICK = "click"
+    INPUT = "input"
+    END = "end"
+    ERROR = "error"
 
 
 @dataclass
 class Progress:
     client: str
     type: str
-    status: str
+    message: str
+    status: Status
     progress: int
-    total: int = field(init=False, default=11)
+    total: int = field(init=False, default=22)
